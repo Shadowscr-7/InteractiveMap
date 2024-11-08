@@ -12,12 +12,13 @@ import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 import Style from 'ol/style/Style';
 import Icon from 'ol/style/Icon';
-import Overlay from 'ol/Overlay';
+import TooltipInfo from '@/components/TooltipInfo';
 
-const OpenLayersMap = ({ personas }) => {
+const GeolocateUsers = ({ personas }) => {
   const mapRef = useRef(null);
   const markerSource = useRef(new VectorSource());
-  const [selectedPersona, setSelectedPersona] = useState(null);
+  const [hoveredPersona, setHoveredPersona] = useState(null);
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
 
   // Crear y configurar el mapa
   useEffect(() => {
@@ -40,13 +41,26 @@ const OpenLayersMap = ({ personas }) => {
       });
       initialMap.addLayer(markerLayer);
 
-      // Añadir evento de clic en el mapa para mostrar información del marcador
-      initialMap.on('click', (event) => {
-        mapRef.current.forEachFeatureAtPixel(event.pixel, function (feature) {
+      // Añadir evento de pointermove en el mapa para mostrar información del marcador
+      initialMap.on('pointermove', (event) => {
+        mapRef.current.getTargetElement().style.cursor = ''; // Resetear el cursor por defecto
+
+        // Obtener la feature bajo el puntero
+        const feature = mapRef.current.forEachFeatureAtPixel(event.pixel, (feature) => feature);
+        if (feature) {
           const personaData = feature.get('data');
-          setSelectedPersona(personaData);
-          return true; // Detener la iteración después de encontrar el primer marcador
-        });
+          setHoveredPersona(personaData);
+
+          // Posicionar el cuadro justo encima y ligeramente a la derecha del marcador
+          setTooltipPosition({
+            x: event.pixel[0] + 15, // Un poco a la derecha del marcador
+            y: event.pixel[1] - 15, // Un poco arriba del marcador
+          });
+          
+          mapRef.current.getTargetElement().style.cursor = 'pointer'; // Cambiar el cursor cuando se pasa sobre un marcador
+        } else {
+          setHoveredPersona(null); // Quitar la información si no hay feature bajo el puntero
+        }
       });
 
       mapRef.current = initialMap;
@@ -80,26 +94,24 @@ const OpenLayersMap = ({ personas }) => {
     <div style={{ position: 'relative', width: '100%', height: '500px' }}>
       <div id="map" style={{ width: '100%', height: '100%' }} />
 
-      {selectedPersona && (
-        <div
-          style={{
-            position: 'absolute',
-            top: '20px',
-            left: '20px',
-            padding: '10px',
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-            borderRadius: '5px',
-            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+      {hoveredPersona && (
+        <><TooltipInfo
+          data={{
+            nombre: hoveredPersona.nombre,
+            'Device ID': hoveredPersona.device_id,
+            'Movil ID': hoveredPersona.movil_id,
           }}
-        >
+          position={tooltipPosition}
+          title="Información de Persona" />
+          
           <h4>Información de Persona</h4>
-          <p><strong>Nombre:</strong> {selectedPersona.nombre}</p>
-          <p><strong>Device ID:</strong> {selectedPersona.device_id}</p>
-          <p><strong>Movil ID:</strong> {selectedPersona.movil_id}</p>
-        </div>
+          <p><strong>Nombre:</strong> {hoveredPersona.nombre}</p>
+          <p><strong>Device ID:</strong> {hoveredPersona.device_id}</p>
+          <p><strong>Movil ID:</strong> {hoveredPersona.movil_id}</p>
+        </>
       )}
     </div>
   );
 };
 
-export default OpenLayersMap;
+export default GeolocateUsers;

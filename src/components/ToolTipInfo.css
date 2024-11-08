@@ -1,0 +1,28 @@
+/* src/components/TooltipInfo.css */
+
+.tooltip-info {
+    position: absolute;
+    padding: 10px;
+    background-color: rgba(255, 255, 255, 1); /* Fondo blanco sólido */
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transform: translate(-50%, -100%);
+    pointer-events: none;
+    z-index: 1000;
+    width: auto;
+    max-width: 200px;
+    color: #000 !important; /* Forzar color negro para todo el texto */
+    font-weight: 500; /* Asegurar peso de fuente */
+  }
+  
+  .tooltip-info h4,
+  .tooltip-info p {
+    color: #000 !important; /* Forzar color negro oscuro */
+    opacity: 1 !important; /* Asegurar opacidad del texto */
+    margin: 0;
+  }
+  
+  .tooltip-info strong {
+    color: #000 !important; /* Forzar color negro en textos en negrita */
+  }
+  
