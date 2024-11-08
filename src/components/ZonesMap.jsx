@@ -13,6 +13,7 @@ import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 import Style from 'ol/style/Style';
 import Fill from 'ol/style/Fill';
+import Modify from 'ol/interaction/Modify';
 import TooltipInfo from '@/components/TooltipInfo';
 
 const ZonesMap = ({ zones }) => {
@@ -42,6 +43,10 @@ const ZonesMap = ({ zones }) => {
       });
       initialMap.addLayer(zoneLayer);
 
+      // Añadir la interacción de modificación para hacer los puntos arrastrables
+      const modify = new Modify({ source: zoneSource.current });
+      initialMap.addInteraction(modify);
+
       // Evento para mostrar información al pasar sobre una zona
       initialMap.on('pointermove', (event) => {
         mapRef.current.getTargetElement().style.cursor = ''; // Resetear el cursor por defecto
@@ -59,6 +64,16 @@ const ZonesMap = ({ zones }) => {
         } else {
           setHoveredZone(null); // Quitar la información si no hay zona bajo el puntero
         }
+      });
+
+      // Escuchar el evento de modificación para actualizar las coordenadas de la zona en tiempo real
+      modify.on('modifyend', (event) => {
+        event.features.forEach((feature) => {
+          const modifiedCoords = feature.getGeometry().getCoordinates();
+          const zoneData = feature.get('data');
+          console.log('Zona modificada:', zoneData.nombre, modifiedCoords);
+          // Aquí puedes guardar las nuevas coordenadas en el estado o en un backend, si es necesario.
+        });
       });
 
       mapRef.current = initialMap;
@@ -93,18 +108,15 @@ const ZonesMap = ({ zones }) => {
       <div id="map" style={{ width: '100%', height: '100%' }} />
 
       {hoveredZone && (
-        <><TooltipInfo
-            data={{
-                nombre: hoveredZone.nombre,
-                'Moviles Activos': hoveredZone.movilesActivos,
-                'Pedidos Pendientes': hoveredZone.pedidosPendientes,
-            }}
-            position={tooltipPosition}
-            title="Información de Zona" />
-                  
-        <h4>{hoveredZone.nombre}</h4>
-        <p><strong>Moviles Activos:</strong> {hoveredZone.movilesActivos}</p>
-        <p><strong>Pedidos Pendientes:</strong> {hoveredZone.pedidosPendientes}</p></>
+        <TooltipInfo
+          data={{
+            nombre: hoveredZone.nombre,
+            'Moviles Activos': hoveredZone.movilesActivos,
+            'Pedidos Pendientes': hoveredZone.pedidosPendientes,
+          }}
+          position={tooltipPosition}
+          title="Información de Zona"
+        />
       )}
     </div>
   );
