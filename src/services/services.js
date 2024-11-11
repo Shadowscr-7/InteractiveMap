@@ -2,7 +2,7 @@
 import http from './http';
 
 // Ejemplo de función para iniciar sesión
-export const login = async (credentials) => {
+/*export const login = async (credentials) => {
   try {
     const response = await http.post('/auth/login', credentials);
     // Guardar el token en localStorage
@@ -12,37 +12,20 @@ export const login = async (credentials) => {
     console.error('Error en el login:', error);
     throw error;
   }
-};
+};*/
 
-// Ejemplo de función para obtener datos de usuario
-export const getUserData = async () => {
-  try {
-    const response = await http.get('/user/data');
-    return response.data;
-  } catch (error) {
-    console.error('Error al obtener datos de usuario:', error);
-    throw error;
-  }
-};
-
-// Ejemplo de función para realizar otra solicitud GET
-export const getSomeData = async () => {
-  try {
-    const response = await http.get('/some/endpoint');
-    return response.data;
-  } catch (error) {
-    console.error('Error al obtener algunos datos:', error);
-    throw error;
-  }
-};
-
-// Ejemplo de función para realizar una solicitud POST
-export const postData = async (data) => {
-  try {
-    const response = await http.post('/some/endpoint', data);
-    return response.data;
-  } catch (error) {
-    console.error('Error al enviar datos:', error);
-    throw error;
-  }
-};
+// Ejemplo de función para invocar la API ListMoviles
+export const getMovilesData = async (escenarioId) => {
+    try {
+      const response = await http.get('/DatosMapa/ListMoviles', {
+        headers: {
+          EscenarioId: escenarioId,
+          Cookie: 'GX_CLIENT_ID=6b58c02d-0340-45bf-bab4-377f4376f5c0', // Configura la cookie aquí
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error al obtener datos de Moviles:', error);
+      throw error;
+    }
+  };

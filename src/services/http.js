@@ -1,8 +1,8 @@
 // src/services/http.js
 import axios from 'axios';
 
-// URL base de tu API (ajústala según sea necesario)
-const BASE_URL = 'https://tu-api.com/api';
+// URL base de tu API
+const BASE_URL = 'http://192.168.1.72:8082/ICA_Geos_/rest';
 
 // Obtener el token JWT del almacenamiento local
 const getToken = () => {
@@ -35,9 +35,8 @@ http.interceptors.request.use(
 http.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Manejar el error (p. ej., redirigir al login si el token es inválido)
     if (error.response && error.response.status === 401) {
-      // Redireccionar al login u otra acción si el token es inválido
+      // Redirigir al login o realizar otra acción si el token es inválido
       // window.location.href = '/login';
     }
     return Promise.reject(error);
