@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import OpenLayersMap from '../components/OpenLayersMap';
+import WebSocketClient from '../components/WebSocketClient';
 import { useEffect, useState } from 'react';
 
 const Page = () => {
@@ -36,7 +37,10 @@ const Page = () => {
         numero={location.numero}
         onLocationChange={handleLocationChange}
       />
+      {/* Colocar el componente WebSocket debajo del mapa */}
+      <WebSocketClient />
     </div>
+    
   );
 };
 

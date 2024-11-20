@@ -14,14 +14,13 @@ import http from './http';
   }
 };*/
 
-export const getMovilesData = async (escenarioId,agenciaId) => {
+export const getMovilesData = async (escenarioId, agenciaId) => {
   try {
-    // Agrega EscenarioId como query parameter
+    // Parámetros enviados en el body
     const response = await http.post('/DatosMapa/ListarMovilesAgencias', {
-      params: {
-        EscenarioId: escenarioId, // Query parameter
-        AgenciaId: agenciaId
-      },
+      EscenarioId: escenarioId, // En el body
+      AgenciaId: agenciaId     // En el body
+    }, {
       headers: {
         Cookie: 'GX_CLIENT_ID=6b58c02d-0340-45bf-bab4-377f4376f5c0', // Cookie
       },

@@ -12,7 +12,6 @@ import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 import Style from 'ol/style/Style';
 import Icon from 'ol/style/Icon';
-import TooltipInfo from '@/components/TooltipInfo';
 
 const GeolocateUsers = ({ personas }) => {
   const mapRef = useRef(null);
@@ -41,25 +40,25 @@ const GeolocateUsers = ({ personas }) => {
       });
       initialMap.addLayer(markerLayer);
 
-      // Añadir evento de pointermove en el mapa para mostrar información del marcador
+      // Añadir evento de pointermove para manejar los tooltips
       initialMap.on('pointermove', (event) => {
         mapRef.current.getTargetElement().style.cursor = ''; // Resetear el cursor por defecto
 
-        // Obtener la feature bajo el puntero
+        // Detectar la feature bajo el puntero
         const feature = mapRef.current.forEachFeatureAtPixel(event.pixel, (feature) => feature);
         if (feature) {
-          const personaData = feature.get('data');
+          const personaData = feature.get('data'); // Obtener datos de la persona
           setHoveredPersona(personaData);
 
-          // Posicionar el cuadro justo encima y ligeramente a la derecha del marcador
+          // Posicionar el cuadro justo encima del marcador
           setTooltipPosition({
-            x: event.pixel[0] + 15, // Un poco a la derecha del marcador
-            y: event.pixel[1] - 15, // Un poco arriba del marcador
+            x: event.pixel[0] + 15, // Ajuste horizontal
+            y: event.pixel[1] - 15, // Ajuste vertical
           });
-          
-          mapRef.current.getTargetElement().style.cursor = 'pointer'; // Cambiar el cursor cuando se pasa sobre un marcador
+
+          mapRef.current.getTargetElement().style.cursor = 'pointer'; // Cambiar cursor
         } else {
-          setHoveredPersona(null); // Quitar la información si no hay feature bajo el puntero
+          setHoveredPersona(null); // Limpiar tooltip si no hay feature
         }
       });
 
@@ -72,8 +71,10 @@ const GeolocateUsers = ({ personas }) => {
     markerSource.current.clear();
 
     personas.forEach((persona) => {
+      const { MovId, latitude, longitude } = persona;
+
       const marker = new Feature({
-        geometry: new Point(fromLonLat([persona.coord_x, persona.coord_y])),
+        geometry: new Point(fromLonLat([longitude, latitude])),
       });
 
       marker.setStyle(
@@ -85,7 +86,8 @@ const GeolocateUsers = ({ personas }) => {
         })
       );
 
-      marker.set('data', persona);
+      // Asociar los datos de la persona al marcador
+      marker.set('data', { MovId, nombre: `Persona ${MovId}`, latitude, longitude });
       markerSource.current.addFeature(marker);
     });
   }, [personas]);
@@ -95,20 +97,23 @@ const GeolocateUsers = ({ personas }) => {
       <div id="map" style={{ width: '100%', height: '100%' }} />
 
       {hoveredPersona && (
-        <><TooltipInfo
-          data={{
-            nombre: hoveredPersona.nombre,
-            'Device ID': hoveredPersona.device_id,
-            'Movil ID': hoveredPersona.movil_id,
+        <div
+          style={{
+            position: 'absolute',
+            top: `${tooltipPosition.y}px`,
+            left: `${tooltipPosition.x}px`,
+            backgroundColor: 'white',
+            padding: '5px',
+            border: '1px solid black',
+            borderRadius: '5px',
+            pointerEvents: 'none',
           }}
-          position={tooltipPosition}
-          title="Información de Persona" />
-          
+        >
           <h4>Información de Persona</h4>
-          <p><strong>Nombre:</strong> {hoveredPersona.nombre}</p>
-          <p><strong>Device ID:</strong> {hoveredPersona.device_id}</p>
-          <p><strong>Movil ID:</strong> {hoveredPersona.movil_id}</p>
-        </>
+          <p><strong>Movil ID:</strong> {hoveredPersona.MovId}</p>
+          <p><strong>Latitud:</strong> {hoveredPersona.latitude.toFixed(6)}</p>
+          <p><strong>Longitud:</strong> {hoveredPersona.longitude.toFixed(6)}</p>
+        </div>
       )}
     </div>
   );

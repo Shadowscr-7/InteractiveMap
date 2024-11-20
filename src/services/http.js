@@ -1,8 +1,7 @@
-// src/services/http.js
 import axios from 'axios';
 
-// URL base de tu API
-const BASE_URL = 'http://192.168.1.72:8082/ICA_Geos_/rest';
+// URL base del proxy
+const BASE_URL = '/api'; // Ahora apunta al proxy configurado en next.config.js
 
 // Obtener el token JWT del almacenamiento local
 const getToken = () => {
