@@ -37,9 +37,14 @@ const OpenLayersMap = ({ pais, departamento, ciudad, calle, numero, onLocationCh
 
   // Geolocalización inicial basada en los parámetros
   useEffect(() => {
-    const address = `${numero ? `${numero} ` : ''}${calle ? `${calle}, ` : ''}${ciudad}, ${departamento}, ${pais}`;
-
     const fetchCoordinates = async () => {
+      if (!pais && !departamento && !ciudad && !calle && !numero) {
+        console.warn("No se proporcionaron suficientes datos para geolocalizar.");
+        return;
+      }
+
+      const address = `${numero ? `${numero} ` : ''}${calle ? `${calle}, ` : ''}${ciudad || ''}, ${departamento || ''}, ${pais || ''}`;
+
       try {
         const response = await fetch(
           `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1`
@@ -98,15 +103,19 @@ const OpenLayersMap = ({ pais, departamento, ciudad, calle, numero, onLocationCh
           );
           const data = await response.json();
 
-          const newLocation = {
-            pais: data.address.country || '',
-            departamento: data.address.state || '',
-            ciudad: data.address.city || data.address.town || '',
-            calle: data.address.road || '',
-            numero: data.address.house_number || '',
-          };
+          if (data && data.address) {
+            const newLocation = {
+              pais: data.address.country || '',
+              departamento: data.address.state || '',
+              ciudad: data.address.city || data.address.town || '',
+              calle: data.address.road || '',
+              numero: data.address.house_number || '',
+            };
 
-          onLocationChange(newLocation);
+            onLocationChange(newLocation, coords);
+          } else {
+            console.warn("No se pudo realizar la búsqueda inversa.");
+          }
         } catch (error) {
           console.error("Error en la búsqueda inversa:", error);
         }
