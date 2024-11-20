@@ -26,6 +26,15 @@ const OpenLayersMap = ({ pais, departamento, ciudad, calle, numero, onLocationCh
   // Crear una referencia para la capa de mapa
   const layerRef = useRef(new TileLayer({ source: new OSM() }));
 
+  // Función para determinar el nivel de zoom en función de los parámetros disponibles
+  const getZoomLevel = () => {
+    if (numero) return 18;      // Zoom muy cercano para número de puerta
+    if (calle) return 16;       // Zoom cercano para calle
+    if (ciudad) return 13;      // Zoom medio para ciudad
+    if (departamento) return 10; // Zoom alejado para departamento
+    return 5;                   // Zoom lejano para país
+  };
+
   // Geolocalización inicial basada en los parámetros
   useEffect(() => {
     const address = `${numero ? `${numero} ` : ''}${calle ? `${calle}, ` : ''}${ciudad}, ${departamento}, ${pais}`;
@@ -41,9 +50,10 @@ const OpenLayersMap = ({ pais, departamento, ciudad, calle, numero, onLocationCh
           const { lat, lon } = data[0];
           const coords = [parseFloat(lon), parseFloat(lat)];
           setCoordinates(coords);
-          addMarker(coords);
+          if (numero) addMarker(coords); // Solo muestra marcador si hay número de puerta
           if (mapRef.current) {
             mapRef.current.getView().setCenter(fromLonLat(coords));
+            mapRef.current.getView().setZoom(getZoomLevel());
           }
         } else {
           console.warn("No se encontraron coordenadas para la dirección proporcionada.");
@@ -65,7 +75,7 @@ const OpenLayersMap = ({ pais, departamento, ciudad, calle, numero, onLocationCh
         layers: [layerRef.current],
         view: new View({
           center: coordinates ? fromLonLat(coordinates) : fromLonLat([-56.1645, -34.9011]),
-          zoom: 13,
+          zoom: getZoomLevel(),
         }),
       });
 
@@ -140,6 +150,7 @@ const OpenLayersMap = ({ pais, departamento, ciudad, calle, numero, onLocationCh
   const handleCenterMap = () => {
     if (coordinates) {
       mapRef.current.getView().setCenter(fromLonLat(coordinates));
+      mapRef.current.getView().setZoom(getZoomLevel());
     }
   };
 
