@@ -31,7 +31,7 @@ const GeolocateUsers = ({ personas }) => {
         ],
         view: new View({
           center: fromLonLat([-56.1645, -34.9011]), // Centro inicial
-          zoom: 12,
+          zoom: 15, // Nivel de zoom inicial
         }),
       });
 
@@ -44,7 +44,6 @@ const GeolocateUsers = ({ personas }) => {
       initialMap.on('pointermove', (event) => {
         mapRef.current.getTargetElement().style.cursor = ''; // Resetear el cursor por defecto
 
-        // Detectar la feature bajo el puntero
         const feature = mapRef.current.forEachFeatureAtPixel(event.pixel, (feature) => feature);
         if (feature) {
           const personaData = feature.get('data'); // Obtener datos de la persona
@@ -56,8 +55,11 @@ const GeolocateUsers = ({ personas }) => {
             y: event.pixel[1] - 15, // Ajuste vertical
           });
 
+          console.log('Feature encontrada bajo el puntero:', personaData);
+
           mapRef.current.getTargetElement().style.cursor = 'pointer'; // Cambiar cursor
         } else {
+          console.log('No hay feature bajo el puntero en posición:', event.pixel);
           setHoveredPersona(null); // Limpiar tooltip si no hay feature
         }
       });
@@ -70,26 +72,48 @@ const GeolocateUsers = ({ personas }) => {
   useEffect(() => {
     markerSource.current.clear();
 
-    personas.forEach((persona) => {
+    console.log('Datos recibidos en GeolocateUsers:', personas);
+
+    if (!personas || personas.length === 0) {
+      console.warn('El array de personas está vacío o no está definido.');
+      return;
+    }
+
+    personas.forEach((persona, index) => {
       const { MovId, latitude, longitude } = persona;
+      console.log('Procesando persona:', persona);
+
+      // Validar coordenadas
+      if (
+        latitude < -90 || latitude > 90 ||
+        longitude < -180 || longitude > 180
+      ) {
+        console.warn(`Coordenadas inválidas para MovId: ${MovId}`);
+        return;
+      }
+
+      // Desplazamiento para evitar solapamientos
+      const offset = 0.0001 * (index % 2 === 0 ? 1 : -1);
 
       const marker = new Feature({
-        geometry: new Point(fromLonLat([longitude, latitude])),
+        geometry: new Point(fromLonLat([longitude + offset, latitude + offset])),
       });
 
       marker.setStyle(
         new Style({
           image: new Icon({
             src: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png',
-            scale: 1,
+            scale: 1.5, // Incrementar escala para mejor visibilidad
           }),
         })
       );
 
-      // Asociar los datos de la persona al marcador
-      marker.set('data', { MovId, nombre: `Persona ${MovId}`, latitude, longitude });
+      marker.set('data', { MovId, latitude, longitude });
       markerSource.current.addFeature(marker);
+      console.log('Marcador añadido para MovId:', MovId);
     });
+
+    console.log('Número de marcadores en la fuente:', markerSource.current.getFeatures().length);
   }, [personas]);
 
   return (
@@ -110,9 +134,15 @@ const GeolocateUsers = ({ personas }) => {
           }}
         >
           <h4>Información de Persona</h4>
-          <p><strong>Movil ID:</strong> {hoveredPersona.MovId}</p>
-          <p><strong>Latitud:</strong> {hoveredPersona.latitude.toFixed(6)}</p>
-          <p><strong>Longitud:</strong> {hoveredPersona.longitude.toFixed(6)}</p>
+          <p>
+            <strong>Movil ID:</strong> {hoveredPersona.MovId}
+          </p>
+          <p>
+            <strong>Latitud:</strong> {hoveredPersona.latitude.toFixed(6)}
+          </p>
+          <p>
+            <strong>Longitud:</strong> {hoveredPersona.longitude.toFixed(6)}
+          </p>
         </div>
       )}
     </div>
