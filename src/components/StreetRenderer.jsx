@@ -6,7 +6,15 @@ import Icon from 'ol/style/Icon';
 import { fromLonLat } from 'ol/proj';
 import { useEffect } from 'react';
 
-const StreetRenderer = ({ map, streetSource, isMapReady, setIsLoading, params }) => {
+const StreetRenderer = ({
+  map,
+  streetSource,
+  isMapReady,
+  setIsLoading,
+  setErrorMessage,
+  setLastCoordinates,
+  params,
+}) => {
   const { pais, departamento, ciudad, calle, numero, esquina } = params;
 
   useEffect(() => {
@@ -21,13 +29,13 @@ const StreetRenderer = ({ map, streetSource, isMapReady, setIsLoading, params })
       if (!departamento || !calle || !pais) {
         console.warn('Missing required parameters: departamento, calle, or pais.');
         setIsLoading(false);
+        setErrorMessage('Parámetros insuficientes para buscar la dirección.');
         return;
       }
 
       console.log('Fetching street data for:', { pais, departamento, ciudad, calle, numero, esquina });
 
       if (numero || esquina) {
-        // Usar Nominatim para buscar puntos específicos
         const queryParts = [
           calle,
           numero ? `${numero}` : '',
@@ -35,12 +43,17 @@ const StreetRenderer = ({ map, streetSource, isMapReady, setIsLoading, params })
           ciudad,
           departamento,
           pais,
-        ].filter(Boolean).join(', ');
+        ]
+          .filter(Boolean)
+          .join(', ');
 
-        const nominatimUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(queryParts)}&format=json&addressdetails=1`;
+        const nominatimUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+          queryParts
+        )}&format=json&addressdetails=1`;
 
         try {
           setIsLoading(true);
+          setErrorMessage(''); // Limpiar mensajes de error previos
           const response = await fetch(nominatimUrl, {
             headers: {
               'User-Agent': 'StreetRenderer/1.0 (youremail@example.com)',
@@ -57,7 +70,7 @@ const StreetRenderer = ({ map, streetSource, isMapReady, setIsLoading, params })
           if (data.length > 0) {
             streetSource.clear(); // Limpiar puntos anteriores
 
-            data.forEach((result, index) => {
+            data.forEach((result) => {
               const [lon, lat] = [parseFloat(result.lon), parseFloat(result.lat)];
 
               const pointFeature = new Feature({
@@ -68,23 +81,28 @@ const StreetRenderer = ({ map, streetSource, isMapReady, setIsLoading, params })
                 new Style({
                   image: new Icon({
                     anchor: [0.5, 1], // Anclaje del marcador
-                    src: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(`
+                    src:
+                      'data:image/svg+xml;charset=utf-8,' +
+                      encodeURIComponent(`
                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="red" stroke="black" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-map-pin">
                         <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"></path>
                         <circle cx="12" cy="10" r="3"></circle>
                       </svg>
                     `),
-                    scale: 1, // Tamaño del marcador
+                    scale: 1,
                   }),
                 })
               );
 
               streetSource.addFeature(pointFeature);
 
-              // Centrar el mapa y ajustar el zoom si es un solo punto
+              // Actualizar las últimas coordenadas
+              setLastCoordinates([lon, lat]);
+
+              // Centrar el mapa si es un solo punto
               if (data.length === 1) {
                 map.getView().setCenter(fromLonLat([lon, lat]));
-                map.getView().setZoom(15); // Nivel de zoom más alejado
+                map.getView().setZoom(15); // Nivel de zoom estándar
               }
             });
 
@@ -94,10 +112,11 @@ const StreetRenderer = ({ map, streetSource, isMapReady, setIsLoading, params })
               map.getView().fit(extent, { duration: 1000, padding: [50, 50, 50, 50] });
             }
           } else {
-            console.warn('No points found in Nominatim for the given address.');
+            setErrorMessage('No se encontraron puntos para la dirección especificada.');
           }
         } catch (error) {
           console.error('Error fetching point data from Nominatim:', error.message);
+          setErrorMessage('Error al consultar los datos de la dirección.');
         } finally {
           setIsLoading(false);
         }
@@ -124,6 +143,7 @@ const StreetRenderer = ({ map, streetSource, isMapReady, setIsLoading, params })
 
         try {
           setIsLoading(true);
+          setErrorMessage('');
           const response = await fetch(overpassUrl, {
             headers: {
               'User-Agent': 'StreetRenderer/1.0 (youremail@example.com)',
@@ -168,10 +188,11 @@ const StreetRenderer = ({ map, streetSource, isMapReady, setIsLoading, params })
               map.getView().fit(extent, { duration: 1000, padding: [50, 50, 50, 50] });
             }
           } else {
-            console.warn('No street segments found in Overpass API.');
+            setErrorMessage('No se encontraron calles para la dirección especificada.');
           }
         } catch (error) {
           console.error('Error fetching street data from Overpass:', error.message);
+          setErrorMessage('Error al consultar los datos de las calles.');
         } finally {
           setIsLoading(false);
         }
@@ -179,7 +200,7 @@ const StreetRenderer = ({ map, streetSource, isMapReady, setIsLoading, params })
     };
 
     fetchData();
-  }, [map, streetSource, isMapReady, setIsLoading, pais, departamento, ciudad, calle, numero, esquina]);
+  }, [map, streetSource, isMapReady, setIsLoading, setErrorMessage, setLastCoordinates, pais, departamento, ciudad, calle, numero, esquina]);
 
   return null;
 };

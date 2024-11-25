@@ -12,42 +12,89 @@ import { fromLonLat } from 'ol/proj';
 
 const MapCompleto = ({ pais, departamento, ciudad, calle, numero, esquina, children }) => {
   const mapRef = useRef(null);
-  const streetSource = useRef(new VectorSource()); // Fuente compartida para calles
-  const [isMapReady, setIsMapReady] = useState(false); // Nuevo estado para indicar si el mapa está listo
-  const [isLoading, setIsLoading] = useState(true); // Estado general de carga (incluye hijos)
+  const streetSource = useRef(new VectorSource());
+  const [isMapReady, setIsMapReady] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [lastCoordinates, setLastCoordinates] = useState([-56.1645, -34.9011]); // Montevideo por defecto
 
   useEffect(() => {
     console.log('Initializing map...');
     if (!mapRef.current) {
-      // Crear el mapa
+      const baseLayer = new TileLayer({
+        source: new OSM(),
+      });
+
       mapRef.current = new Map({
-        target: 'map', // ID del contenedor
+        target: 'map',
         layers: [
-          new TileLayer({ source: new OSM() }),
+          baseLayer,
           new VectorLayer({
-            source: streetSource.current, // Fuente para las calles
+            source: streetSource.current,
           }),
         ],
         view: new View({
-          center: fromLonLat([-56.1645, -34.9011]), // Coordenadas iniciales en Montevideo
+          center: fromLonLat(lastCoordinates),
           zoom: 5,
         }),
       });
 
-      // Marcar el mapa como listo
       setIsMapReady(true);
-
-      // Simular un retraso adicional para cargar elementos
       setTimeout(() => setIsLoading(false), 1000);
     }
   }, []);
 
+  // Centrado del mapa
+  const handleCenterMap = () => {
+    if (mapRef.current && lastCoordinates) {
+      mapRef.current.getView().setCenter(fromLonLat(lastCoordinates));
+      mapRef.current.getView().setZoom(15); // Zoom predeterminado para puntos cercanos
+    }
+  };
+
   return (
     <div id="map-container" style={{ position: 'relative', width: '100%', height: '100vh' }}>
-      {/* Contenedor del mapa siempre visible */}
+      {/* Contenedor del mapa */}
       <div id="map" style={{ width: '100%', height: '100%' }} />
 
-      {/* Indicador de carga sobre el mapa */}
+      {/* Botón de centrado */}
+      {isMapReady && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '10px',
+            right: '10px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px',
+            zIndex: 1000,
+          }}
+        >
+          <div
+            onClick={handleCenterMap}
+            style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '50%',
+              backgroundColor: '#fff',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+              cursor: 'pointer',
+            }}
+          >
+            {/* Ícono de puntería */}
+            <img
+              src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23007bff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-crosshair'%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3Cline x1='22' y1='12' x2='18' y2='12'%3E%3C/line%3E%3Cline x1='6' y1='12' x2='2' y2='12'%3E%3C/line%3E%3Cline x1='12' y1='6' x2='12' y2='2'%3E%3C/line%3E%3Cline x1='12' y1='22' x2='12' y2='18'%3E%3C/line%3E%3C/svg%3E"
+              alt="Center Icon"
+              style={{ width: '20px', height: '20px' }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Indicador de carga */}
       {isLoading && (
         <div
           style={{
@@ -78,7 +125,25 @@ const MapCompleto = ({ pais, departamento, ciudad, calle, numero, esquina, child
         </div>
       )}
 
-      {/* Pasar el mapa, la fuente y el estado de inicialización a los hijos */}
+      {/* Mensaje de error */}
+      {errorMessage && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '10px',
+            left: '10px',
+            backgroundColor: 'rgba(255, 0, 0, 0.8)',
+            color: '#fff',
+            padding: '10px',
+            borderRadius: '5px',
+            zIndex: 1000,
+          }}
+        >
+          <p>{errorMessage}</p>
+        </div>
+      )}
+
+      {/* Pasar parámetros a los hijos */}
       {isMapReady &&
         children &&
         React.Children.map(children, (child) =>
@@ -86,8 +151,10 @@ const MapCompleto = ({ pais, departamento, ciudad, calle, numero, esquina, child
             map: mapRef.current,
             streetSource: streetSource.current,
             isMapReady,
-            setIsLoading, // Pasar control de carga a los hijos
-            params: { pais, departamento, ciudad, calle, numero, esquina }, // Pasar todos los parámetros
+            setIsLoading,
+            setErrorMessage,
+            setLastCoordinates,
+            params: { pais, departamento, ciudad, calle, numero, esquina },
           })
         )}
     </div>
