@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import * as turf from '@turf/turf'; // Importar Turf.js
 
 const ImportForm = () => {
   const [pais, setPais] = useState('');
@@ -9,11 +8,7 @@ const ImportForm = () => {
   const [resultados, setResultados] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Polígonos de localidades y barrios (pre-cargados, se deben obtener previamente)
-  const areaPolygons = {
-    localidades: [], // Ejemplo: [{ name: "Montevideo", geometry: { ... } }]
-    barrios: [], // Ejemplo: [{ name: "Cordón", geometry: { ... } }]
-  };
+  const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   const fetchData = async () => {
     if (!pais || !departamento) {
@@ -26,15 +21,18 @@ const ImportForm = () => {
     try {
       console.log('Obteniendo calles del departamento desde Overpass...');
 
-      // Consulta 1: Obtener todas las calles del departamento
+      // Consulta a Overpass para obtener las calles
       const overpassQuery = `
         [out:json];
-        area["name"="${departamento}"]["admin_level"="4"]->.searchArea;
+        area["name"="Uruguay"]["admin_level"="2"]->.country;
+        area["name"="${departamento}"]["admin_level"="4"](area.country)->.searchArea;
         (
           way["highway"]["name"](area.searchArea);
         );
         out tags;
       `;
+      console.log('Consulta Overpass API:', overpassQuery);
+
       const overpassResponse = await fetch('https://overpass-api.de/api/interpreter', {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain' },
@@ -48,7 +46,6 @@ const ImportForm = () => {
       const overpassData = await overpassResponse.json();
       console.log('Datos obtenidos de Overpass API:', overpassData);
 
-      // Normalizar calles eliminando duplicados
       const uniqueStreets = Array.from(
         new Map(
           overpassData.elements.map((way) => [
@@ -63,65 +60,42 @@ const ImportForm = () => {
       const enrichedStreets = [];
 
       for (const street of uniqueStreets) {
-        console.log(`Procesando geometría para la calle: ${street.name}`);
+        console.log(`Consultando Nominatim para la calle: ${street.name}`);
 
-        // Consulta 2: Obtener geometría de la calle
-        const geometryQuery = `
-          [out:json];
-          area["name"="${departamento}"]["admin_level"="8"]->.searchArea;
-          way["name"="${street.name}"](area.searchArea);
-          out geom;
-        `;
+        // Llamada a Nominatim
+        const nominatimUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+          street.name
+        )}, ${departamento}, ${pais}&format=json&addressdetails=1`;
 
-        const geometryResponse = await fetch('https://overpass-api.de/api/interpreter', {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain' },
-          body: geometryQuery,
-        });
+        console.log('Consulta Nominatim:', nominatimUrl);
 
-        if (!geometryResponse.ok) {
-          console.warn(`Error obteniendo geometría para ${street.name}`);
+        try {
+          const nominatimResponse = await fetch(nominatimUrl, {
+            headers: { 'User-Agent': 'YourAppName/1.0' },
+          });
+
+          if (!nominatimResponse.ok) {
+            throw new Error(`Error en Nominatim para ${street.name}`);
+          }
+
+          const nominatimData = await nominatimResponse.json();
+          console.log(`Datos de Nominatim para ${street.name}:`, nominatimData);
+
+          const localidad = nominatimData[0]?.address?.city || 'Desconocido';
+          const barrio = nominatimData[0]?.address?.suburb || 'Desconocido';
+
+          enrichedStreets.push({
+            ...street,
+            localidad,
+            barrio,
+          });
+        } catch (error) {
+          console.warn(`Error consultando Nominatim para ${street.name}:`, error.message);
           enrichedStreets.push({ ...street, localidad: 'Error', barrio: 'Error' });
-          continue;
         }
 
-        const geometryData = await geometryResponse.json();
-        console.log(`Geometría obtenida para ${street.name}:`, geometryData);
-
-        const points = geometryData.elements.flatMap((way) =>
-          way.geometry.map(({ lat, lon }) => turf.point([lon, lat]))
-        );
-
-        // Usar Turf.js para determinar localidades y barrios
-        const localidades = new Set();
-        const barrios = new Set();
-
-        points.forEach((point) => {
-          // Verificar localidades
-          areaPolygons.localidades.forEach((localidad) => {
-            const polygon = turf.polygon(localidad.geometry.coordinates);
-            if (turf.booleanPointInPolygon(point, polygon)) {
-              localidades.add(localidad.name);
-            }
-          });
-
-          // Verificar barrios
-          areaPolygons.barrios.forEach((barrio) => {
-            const polygon = turf.polygon(barrio.geometry.coordinates);
-            if (turf.booleanPointInPolygon(point, polygon)) {
-              barrios.add(barrio.name);
-            }
-          });
-        });
-
-        console.log(`Localidades para ${street.name}:`, Array.from(localidades));
-        console.log(`Barrios para ${street.name}:`, Array.from(barrios));
-
-        enrichedStreets.push({
-          ...street,
-          localidad: Array.from(localidades).join(', ') || 'Desconocido',
-          barrio: Array.from(barrios).join(', ') || 'Desconocido',
-        });
+        // Retraso de 1 segundo entre solicitudes
+        await delay(1000);
       }
 
       setResultados(enrichedStreets);
