@@ -6,7 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { Map, View } from 'ol';
 import TileLayer from 'ol/layer/Tile';
 import OSM from 'ol/source/OSM';
-import StreetRenderer from './StreetRenderer';
+//import StreetRenderer from '../components/StreetRenderer';
 import { fromLonLat } from 'ol/proj';
 
 const MapContainer = () => {

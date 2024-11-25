@@ -1,17 +1,20 @@
 import { Feature } from 'ol';
 import { LineString } from 'ol/geom';
-import VectorLayer from 'ol/layer/Vector';
-import VectorSource from 'ol/source/Vector';
 import Style from 'ol/style/Style';
 import Stroke from 'ol/style/Stroke';
 import { fromLonLat } from 'ol/proj';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 
-const StreetRenderer = ({ map, params }) => {
+const StreetRenderer = ({ map, streetSource, isMapReady, params }) => {
   const { departamento, calle, pais } = params;
-  const streetSource = useRef(new VectorSource()); // Fuente persistente para los tramos de la calle
 
   useEffect(() => {
+    // Validación inicial para prevenir el error
+    if (!map || !streetSource || !isMapReady) {
+      console.debug('Map or streetSource is not ready yet. Skipping rendering.');
+      return; // Detenemos la ejecución si el mapa no está listo
+    }
+
     const fetchStreetData = async () => {
       if (!departamento || !calle || !pais) {
         console.warn('Missing required parameters: departamento, calle, or pais.');
@@ -20,7 +23,6 @@ const StreetRenderer = ({ map, params }) => {
 
       console.log('Fetching street data for:', { departamento, calle, pais });
 
-      // Consulta dinámica para Overpass Turbo
       const overpassQuery = `
         [out:json];
         area["name"="${pais}"]["admin_level"="2"]->.countryArea;
@@ -46,7 +48,7 @@ const StreetRenderer = ({ map, params }) => {
         console.log('Overpass response:', data);
 
         if (data.elements && data.elements.length > 0) {
-          streetSource.current.clear(); // Limpiar datos previos
+          streetSource.clear(); // Limpiar datos previos
 
           const features = data.elements
             .filter((element) => element.type === 'way' && element.geometry)
@@ -70,15 +72,13 @@ const StreetRenderer = ({ map, params }) => {
             });
 
           console.log('Features created:', features);
+          streetSource.addFeatures(features);
 
-          // Agregar todas las features al mapa
-          streetSource.current.addFeatures(features);
-
-          // Centrar el mapa en la extensión total de las calles
-          const extent = streetSource.current.getExtent();
+          // Ajustar la vista del mapa al contenido
+          const extent = streetSource.getExtent();
           if (extent && extent.every((value) => value !== Infinity)) {
             console.log('Fitting map to extent:', extent);
-            map.getView().fit(extent, { duration: 1000, padding: [50, 50, 50, 50] });
+            //map.getView().fit(extent, { duration: 1000, padding: [50, 50, 50, 50] });
           } else {
             console.warn('No valid extent found for the street features.');
           }
@@ -91,20 +91,7 @@ const StreetRenderer = ({ map, params }) => {
     };
 
     fetchStreetData();
-  }, [map, departamento, calle, pais]);
-
-  useEffect(() => {
-    console.log('Adding street layer...');
-    const streetLayer = new VectorLayer({
-      source: streetSource.current,
-    });
-    map.addLayer(streetLayer);
-
-    return () => {
-      console.log('Removing street layer...');
-      map.removeLayer(streetLayer);
-    };
-  }, [map]);
+  }, [map, streetSource, isMapReady, departamento, calle, pais]);
 
   return null;
 };
