@@ -86,17 +86,34 @@ const ImportForm = () => {
           }
 
           const nominatimData = await nominatimResponse.json();
-          const localidad = nominatimData[0]?.address?.city || 'Desconocido';
-          const barrio = nominatimData[0]?.address?.suburb || 'Desconocido';
+
+          const address = nominatimData[0]?.address || {};
+          const localidad = address.city || address.town || address.village || address.suburb || address.neighbourhood || address.hamlet || 'Desconocido';
+          const departamento = address.state;
+          const lat = nominatimData[0]?.lat || null;
+          const lon = nominatimData[0]?.lon || null;
 
           enrichedStreets.push({
             ...street,
             localidad,
-            barrio,
+            departamento,
+            lat,
+            lon,
           });
+
+          // Enviar cada calle al servicio ImportarCalles
+          if (lat && lon) {
+            await sendStreetToService({
+              name: street.name,
+              lat,
+              lon,
+              place: localidad,
+              departamento: departamento
+            });
+          }
         } catch (error) {
           console.warn(`Error consultando Nominatim para ${street.name}:`, error.message);
-          enrichedStreets.push({ ...street, localidad: 'Error', barrio: 'Error' });
+          enrichedStreets.push({ ...street, localidad: 'Error', lat: null, lon: null });
         }
 
         await delay(1000);
@@ -178,6 +195,27 @@ const ImportForm = () => {
       console.log(`Localidad enviada correctamente: ${localidad.name}`);
     } catch (error) {
       console.error(`Error al enviar la localidad ${localidad.name}:`, error.message);
+    }
+  };
+
+  const sendStreetToService = async (street) => {
+    try {
+      const response = await fetch('http://192.168.1.72:8082/puestos2/rest/ImportarOSM/ImportarCalles', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(street),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error enviando calle: ${response.status}`);
+      }
+
+      console.log(`Calle enviada correctamente: ${street.name}`);
+    } catch (error) {
+      console.error(`Error al enviar la calle ${street.name}:`, error.message);
     }
   };
 
