@@ -26,34 +26,62 @@ const StreetRenderer = ({
     }
 
     const fetchData = async () => {
-      if (!departamento || !calle || !pais) {
-        console.warn('Missing required parameters: departamento, calle, or pais.');
-        setIsLoading(false);
-        setErrorMessage('Parámetros insuficientes para buscar la dirección.');
-        return;
-      }
+      try {
+        setIsLoading(true);
+        setErrorMessage(''); // Limpiar mensajes de error previos
 
-      console.log('Fetching street data for:', { pais, departamento, ciudad, calle, numero, esquina });
+        if (!calle && departamento || ciudad) {
+          // Buscar centroide del departamento o ciudad
+          const locationQuery = [ciudad, departamento, pais].filter(Boolean).join(', ');
+          const nominatimUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+            locationQuery
+          )}&format=json&addressdetails=1`;
 
-      if (numero || esquina) {
-        const queryParts = [
-          calle,
-          numero ? `${numero}` : '',
-          esquina ? `and ${esquina}` : '',
-          ciudad,
-          departamento,
-          pais,
-        ]
-          .filter(Boolean)
-          .join(', ');
+          const response = await fetch(nominatimUrl, {
+            headers: {
+              'User-Agent': 'StreetRenderer/1.0 (youremail@example.com)',
+            },
+          });
 
-        const nominatimUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
-          queryParts
-        )}&format=json&addressdetails=1`;
+          if (!response.ok) {
+            throw new Error(`Nominatim API error: ${response.status} ${response.statusText}`);
+          }
 
-        try {
-          setIsLoading(true);
-          setErrorMessage(''); // Limpiar mensajes de error previos
+          const data = await response.json();
+          console.log('Nominatim response for department or city:', data);
+
+          if (data.length > 0) {
+            const { lon, lat } = data[0];
+            const centerCoordinates = fromLonLat([parseFloat(lon), parseFloat(lat)]);
+
+            map.getView().setCenter(centerCoordinates);
+            map.getView().setZoom(ciudad ? 12 : 10); // Ajustar nivel de zoom según el alcance (ciudad o departamento)
+            setLastCoordinates([parseFloat(lon), parseFloat(lat)]);
+          } else {
+            setErrorMessage('No se encontraron datos para el departamento o ciudad especificados.');
+          }
+
+          return;
+        }
+
+        if (calle) {
+          console.log('Fetching street data for:', { pais, departamento, ciudad, calle, numero, esquina });
+
+          const queryParts = [
+            calle,
+            numero ? `${numero}` : '',
+            esquina ? `and ${esquina}` : '',
+            ciudad,
+            departamento,
+            pais,
+          ]
+            .filter(Boolean)
+            .join(', ');
+
+          const nominatimUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+            queryParts
+          )}&format=json&addressdetails=1`;
+
           const response = await fetch(nominatimUrl, {
             headers: {
               'User-Agent': 'StreetRenderer/1.0 (youremail@example.com)',
@@ -83,7 +111,7 @@ const StreetRenderer = ({
                     anchor: [0.5, 1], // Anclaje del marcador
                     src:
                       'data:image/svg+xml;charset=utf-8,' +
-                      encodeURIComponent(`
+                      encodeURIComponent(`                    
                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="red" stroke="black" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-map-pin">
                         <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"></path>
                         <circle cx="12" cy="10" r="3"></circle>
@@ -114,88 +142,12 @@ const StreetRenderer = ({
           } else {
             setErrorMessage('No se encontraron puntos para la dirección especificada.');
           }
-        } catch (error) {
-          console.error('Error fetching point data from Nominatim:', error.message);
-          setErrorMessage('Error al consultar los datos de la dirección.');
-        } finally {
-          setIsLoading(false);
         }
-      } else {
-        // Usar Overpass si no hay `numero` o `esquina`
-        const overpassQuery = ciudad
-          ? `
-            [out:json];
-            area["name"="${pais}"]["admin_level"="2"]->.countryArea;
-            area["name"="${departamento}"]["admin_level"="4"](area.countryArea)->.searchArea;
-            area["name"="${ciudad}"]["admin_level"="8"](area.searchArea)->.cityArea;
-            way["name"~"^${calle}$"](area.cityArea);
-            out geom;
-          `
-          : `
-            [out:json];
-            area["name"="${pais}"]["admin_level"="2"]->.countryArea;
-            area["name"="${departamento}"]["admin_level"="4"](area.countryArea)->.searchArea;
-            way["name"~"^${calle}$"](area.searchArea);
-            out geom;
-          `;
-
-        const overpassUrl = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(overpassQuery)}`;
-
-        try {
-          setIsLoading(true);
-          setErrorMessage('');
-          const response = await fetch(overpassUrl, {
-            headers: {
-              'User-Agent': 'StreetRenderer/1.0 (youremail@example.com)',
-            },
-          });
-
-          if (!response.ok) {
-            throw new Error(`Overpass API error: ${response.status} ${response.statusText}`);
-          }
-
-          const data = await response.json();
-          console.log('Overpass response:', data);
-
-          if (data.elements && data.elements.length > 0) {
-            streetSource.clear();
-
-            const features = data.elements
-              .filter((element) => element.type === 'way' && element.geometry)
-              .map((way) => {
-                const coordinates = way.geometry.map(({ lon, lat }) => fromLonLat([lon, lat]));
-
-                const feature = new Feature({
-                  geometry: new LineString(coordinates),
-                });
-
-                feature.setStyle(
-                  new Style({
-                    stroke: new Stroke({
-                      color: 'blue',
-                      width: 4,
-                    }),
-                  })
-                );
-
-                return feature;
-              });
-
-            streetSource.addFeatures(features);
-
-            const extent = streetSource.getExtent();
-            if (extent && extent.every((value) => value !== Infinity)) {
-              map.getView().fit(extent, { duration: 1000, padding: [50, 50, 50, 50] });
-            }
-          } else {
-            setErrorMessage('No se encontraron calles para la dirección especificada.');
-          }
-        } catch (error) {
-          console.error('Error fetching street data from Overpass:', error.message);
-          setErrorMessage('Error al consultar los datos de las calles.');
-        } finally {
-          setIsLoading(false);
-        }
+      } catch (error) {
+        console.error('Error fetching data:', error.message);
+        setErrorMessage('Error al consultar los datos de la dirección.');
+      } finally {
+        setIsLoading(false);
       }
     };
 

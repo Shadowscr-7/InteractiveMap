@@ -1,12 +1,30 @@
 'use client';
 
 import { useState } from 'react';
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+  Typography,
+  Paper,
+  Alert,
+} from '@mui/material';
 
 const ImportForm = () => {
   const [pais, setPais] = useState('');
   const [departamento, setDepartamento] = useState('');
   const [resultados, setResultados] = useState([]);
+  const [localidades, setLocalidades] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingLocalidades, setLoadingLocalidades] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -21,7 +39,6 @@ const ImportForm = () => {
     try {
       console.log('Obteniendo calles del departamento desde Overpass...');
 
-      // Consulta a Overpass para obtener las calles
       const overpassQuery = `
         [out:json];
         area["name"="Uruguay"]["admin_level"="2"]->.country;
@@ -31,8 +48,6 @@ const ImportForm = () => {
         );
         out tags;
       `;
-      console.log('Consulta Overpass API:', overpassQuery);
-
       const overpassResponse = await fetch('https://overpass-api.de/api/interpreter', {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain' },
@@ -44,7 +59,6 @@ const ImportForm = () => {
       }
 
       const overpassData = await overpassResponse.json();
-      console.log('Datos obtenidos de Overpass API:', overpassData);
 
       const uniqueStreets = Array.from(
         new Map(
@@ -55,19 +69,12 @@ const ImportForm = () => {
         ).values()
       );
 
-      console.log('Calles normalizadas:', uniqueStreets);
-
       const enrichedStreets = [];
 
       for (const street of uniqueStreets) {
-        console.log(`Consultando Nominatim para la calle: ${street.name}`);
-
-        // Llamada a Nominatim
         const nominatimUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
           street.name
         )}, ${departamento}, ${pais}&format=json&addressdetails=1`;
-
-        console.log('Consulta Nominatim:', nominatimUrl);
 
         try {
           const nominatimResponse = await fetch(nominatimUrl, {
@@ -79,8 +86,6 @@ const ImportForm = () => {
           }
 
           const nominatimData = await nominatimResponse.json();
-          console.log(`Datos de Nominatim para ${street.name}:`, nominatimData);
-
           const localidad = nominatimData[0]?.address?.city || 'Desconocido';
           const barrio = nominatimData[0]?.address?.suburb || 'Desconocido';
 
@@ -94,7 +99,6 @@ const ImportForm = () => {
           enrichedStreets.push({ ...street, localidad: 'Error', barrio: 'Error' });
         }
 
-        // Retraso de 1 segundo entre solicitudes
         await delay(1000);
       }
 
@@ -107,54 +111,155 @@ const ImportForm = () => {
     }
   };
 
-  return (
-    <div style={{ padding: '20px' }}>
-      <h1>Importar Calles por Departamento</h1>
-      <div style={{ marginBottom: '20px' }}>
-        <input
-          type="text"
-          placeholder="País"
-          value={pais}
-          onChange={(e) => setPais(e.target.value)}
-          style={{ marginRight: '10px', padding: '5px' }}
-        />
-        <input
-          type="text"
-          placeholder="Departamento"
-          value={departamento}
-          onChange={(e) => setDepartamento(e.target.value)}
-          style={{ marginRight: '10px', padding: '5px' }}
-        />
-        <button onClick={fetchData} style={{ padding: '5px 10px' }}>
-          {loading ? 'Cargando...' : 'Importar'}
-        </button>
-      </div>
+  const fetchLocalidades = async () => {
+    if (!departamento) {
+      setErrorMessage('Por favor, ingrese un departamento para importar localidades.');
+      return;
+    }
 
-      {resultados.length > 0 ? (
-        <table border="1" style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr>
-              <th>Nombre de la Calle</th>
-              <th>Old Name</th>
-              <th>Localidad</th>
-              <th>Barrio</th>
-            </tr>
-          </thead>
-          <tbody>
-            {resultados.map((street, index) => (
-              <tr key={index}>
-                <td>{street.name}</td>
-                <td>{street.old_name}</td>
-                <td>{street.localidad}</td>
-                <td>{street.barrio}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      ) : (
-        !loading && <p>No se encontraron resultados.</p>
-      )}
-    </div>
+    setLoadingLocalidades(true);
+
+    const overpassQuery = `
+      [out:json][timeout:25];
+      area["name"="${departamento}"]["admin_level"="4"]->.searchArea;
+      node["place"]["name"](area.searchArea);
+      out body;
+    `;
+
+    try {
+      const response = await fetch('https://overpass-api.de/api/interpreter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: overpassQuery,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error en Overpass API: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const localidadesData = data.elements.map((node) => ({
+        name: node.tags.name,
+        lat: node.lat,
+        lon: node.lon,
+        place: node.tags.place,
+        departamento: departamento,
+      }));
+
+      setLocalidades(localidadesData);
+
+      for (const localidad of localidadesData) {
+        await sendToService(localidad);
+      }
+    } catch (error) {
+      console.error('Error importando localidades:', error.message);
+      setErrorMessage('Error al importar localidades. Consulte la consola para más detalles.');
+    } finally {
+      setLoadingLocalidades(false);
+    }
+  };
+
+  const sendToService = async (localidad) => {
+    try {
+      const response = await fetch('http://192.168.1.72:8082/puestos2/rest/ImportarOSM/ImportarLocalidades', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(localidad),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error enviando localidad: ${response.status}`);
+      }
+
+      console.log(`Localidad enviada correctamente: ${localidad.name}`);
+    } catch (error) {
+      console.error(`Error al enviar la localidad ${localidad.name}:`, error.message);
+    }
+  };
+
+  return (
+    <Box sx={{ p: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
+      <Box sx={{ p: 4, maxWidth: 800, width: '100%', backgroundColor: 'white', borderRadius: 2, boxShadow: 3 }}>
+        <Typography variant="h4" gutterBottom>
+          Importar Calles y Localidades
+        </Typography>
+
+        <Box sx={{ mb: 3, display: 'flex', gap: 2 }}>
+          <TextField
+            label="País"
+            variant="outlined"
+            fullWidth
+            value={pais}
+            onChange={(e) => setPais(e.target.value)}
+          />
+          <TextField
+            label="Departamento"
+            variant="outlined"
+            fullWidth
+            value={departamento}
+            onChange={(e) => setDepartamento(e.target.value)}
+          />
+        </Box>
+
+        <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={fetchData}
+            disabled={loading}
+          >
+            {loading ? <CircularProgress size={24} /> : 'Importar Calles'}
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={fetchLocalidades}
+            disabled={loadingLocalidades}
+          >
+            {loadingLocalidades ? <CircularProgress size={24} /> : 'Importar Localidades'}
+          </Button>
+        </Box>
+
+        {errorMessage && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {errorMessage}
+          </Alert>
+        )}
+
+        {resultados.length > 0 && (
+          <TableContainer component={Paper} sx={{ mb: 3 }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Nombre de la Calle</TableCell>
+                  <TableCell>Old Name</TableCell>
+                  <TableCell>Localidad</TableCell>
+                  <TableCell>Barrio</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {resultados.map((street, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{street.name}</TableCell>
+                    <TableCell>{street.old_name}</TableCell>
+                    <TableCell>{street.localidad}</TableCell>
+                    <TableCell>{street.barrio}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
+
+        {localidades.length > 0 && (
+          <Typography variant="body1" color="success.main">
+            Se han importado {localidades.length} localidades.
+          </Typography>
+        )}
+      </Box>
+    </Box>
   );
 };
 
