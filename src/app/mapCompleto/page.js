@@ -10,7 +10,10 @@ const Page = () => {
 
   const pais = searchParams.get('pais') || '';
   const departamento = searchParams.get('departamento') || '';
+  const ciudad = searchParams.get('ciudad') || '';
   const calle = searchParams.get('calle') || '';
+  const numero = searchParams.get('numero') || '';
+  const esquina = searchParams.get('esquina') || '';
 
   useEffect(() => {
     // Sobrescribir el manejo global de errores
@@ -30,12 +33,19 @@ const Page = () => {
       window.removeEventListener('unhandledrejection', handleError);
     };
   }, []);
-  
 
   return (
-    <MapCompleto pais={pais} departamento={departamento} calle={calle}>
-      <StreetRenderer params={{ pais, departamento, calle }} />
-    </MapCompleto>
+    <MapCompleto
+  pais={pais}
+  departamento={departamento}
+  calle={calle}
+  ciudad={ciudad}
+  numero={numero}
+  esquina={esquina}
+>
+  <StreetRenderer params={{ pais, departamento, ciudad, calle, numero, esquina }} />
+</MapCompleto>
+
   );
 };
 

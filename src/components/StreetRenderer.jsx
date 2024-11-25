@@ -6,9 +6,13 @@ import { fromLonLat } from 'ol/proj';
 import { useEffect } from 'react';
 
 const StreetRenderer = ({ map, streetSource, isMapReady, setIsLoading, params }) => {
-  const { departamento, calle, pais } = params;
+  const { pais, departamento, ciudad, calle, numero, esquina } = params;
 
+  console.log('StreetRenderer params:', params);
   useEffect(() => {
+    // Log para verificar que los parámetros están llegando correctamente
+    console.log('StreetRenderer params:', params);
+
     if (!map || !streetSource || !isMapReady) {
       console.debug('Map or streetSource is not ready yet. Skipping rendering.');
       return;
@@ -21,15 +25,25 @@ const StreetRenderer = ({ map, streetSource, isMapReady, setIsLoading, params })
         return;
       }
 
-      console.log('Fetching street data for:', { departamento, calle, pais });
+      console.log('Fetching street data for:', { pais, departamento, ciudad, calle, numero, esquina });
 
-      const overpassQuery = `
-        [out:json];
-        area["name"="${pais}"]["admin_level"="2"]->.countryArea;
-        area["name"="${departamento}"]["admin_level"="4"](area.countryArea)->.searchArea;
-        way["name"~"^${calle}$"](area.searchArea);
-        out geom;
-      `;
+      // Generar consulta específica según el valor de `ciudad`
+      const overpassQuery = ciudad
+        ? `
+          [out:json];
+          area["name"="${pais}"]["admin_level"="2"]->.countryArea;
+          area["name"="${departamento}"]["admin_level"="4"](area.countryArea)->.searchArea;
+          area["name"="${ciudad}"]["admin_level"="8"](area.searchArea)->.cityArea;
+          way["name"~"^${calle}$"](area.cityArea);
+          out geom;
+        `
+        : `
+          [out:json];
+          area["name"="${pais}"]["admin_level"="2"]->.countryArea;
+          area["name"="${departamento}"]["admin_level"="4"](area.countryArea)->.searchArea;
+          way["name"~"^${calle}$"](area.searchArea);
+          out geom;
+        `;
 
       const overpassUrl = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(overpassQuery)}`;
 
@@ -78,31 +92,20 @@ const StreetRenderer = ({ map, streetSource, isMapReady, setIsLoading, params })
 
           const extent = streetSource.getExtent();
           if (extent && extent.every((value) => value !== Infinity)) {
-            console.log('Fitting map to extent:', extent);
-
-            // Ajustar la vista y esperar al evento "moveend"
             map.getView().fit(extent, { duration: 1000, padding: [50, 50, 50, 50] });
-
-            const onMoveEnd = () => {
-              console.log('Map animation ended.');
-              setIsLoading(false); // Ocultar capa de carga al finalizar el zoom
-              map.un('moveend', onMoveEnd); // Desregistrar el evento
-            };
-
-            map.on('moveend', onMoveEnd); // Registrar el evento
           }
         } else {
           console.warn('No street segments found in Overpass API.');
-          setIsLoading(false);
         }
       } catch (error) {
         console.error('Error fetching street data:', error.message);
-        setIsLoading(false);
+      } finally {
+        setIsLoading(false); // Ocultar capa de carga
       }
     };
 
     fetchStreetData();
-  }, [map, streetSource, isMapReady, setIsLoading, departamento, calle, pais]);
+  }, [map, streetSource, isMapReady, setIsLoading, pais, departamento, ciudad, calle, numero, esquina]);
 
   return null;
 };

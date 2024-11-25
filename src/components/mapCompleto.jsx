@@ -10,7 +10,7 @@ import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 import { fromLonLat } from 'ol/proj';
 
-const MapCompleto = ({ pais, departamento, calle, children }) => {
+const MapCompleto = ({ pais, departamento, ciudad, calle, numero, esquina, children }) => {
   const mapRef = useRef(null);
   const streetSource = useRef(new VectorSource()); // Fuente compartida para calles
   const [isMapReady, setIsMapReady] = useState(false); // Nuevo estado para indicar si el mapa está listo
@@ -87,6 +87,7 @@ const MapCompleto = ({ pais, departamento, calle, children }) => {
             streetSource: streetSource.current,
             isMapReady,
             setIsLoading, // Pasar control de carga a los hijos
+            params: { pais, departamento, ciudad, calle, numero, esquina }, // Pasar todos los parámetros
           })
         )}
     </div>
