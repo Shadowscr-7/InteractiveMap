@@ -5,19 +5,19 @@ import Stroke from 'ol/style/Stroke';
 import { fromLonLat } from 'ol/proj';
 import { useEffect } from 'react';
 
-const StreetRenderer = ({ map, streetSource, isMapReady, params }) => {
+const StreetRenderer = ({ map, streetSource, isMapReady, setIsLoading, params }) => {
   const { departamento, calle, pais } = params;
 
   useEffect(() => {
-    // Validación inicial para prevenir el error
     if (!map || !streetSource || !isMapReady) {
       console.debug('Map or streetSource is not ready yet. Skipping rendering.');
-      return; // Detenemos la ejecución si el mapa no está listo
+      return;
     }
 
     const fetchStreetData = async () => {
       if (!departamento || !calle || !pais) {
         console.warn('Missing required parameters: departamento, calle, or pais.');
+        setIsLoading(false); // Detener la carga si faltan parámetros
         return;
       }
 
@@ -34,6 +34,7 @@ const StreetRenderer = ({ map, streetSource, isMapReady, params }) => {
       const overpassUrl = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(overpassQuery)}`;
 
       try {
+        setIsLoading(true); // Mostrar capa de carga
         const response = await fetch(overpassUrl, {
           headers: {
             'User-Agent': 'StreetRenderer/1.0 (youremail@example.com)',
@@ -41,14 +42,16 @@ const StreetRenderer = ({ map, streetSource, isMapReady, params }) => {
         });
 
         if (!response.ok) {
-          throw new Error(`Overpass API error: ${response.status} ${response.statusText}`);
+          console.error(`Overpass API error: ${response.status} ${response.statusText}`);
+          setIsLoading(false);
+          return;
         }
 
         const data = await response.json();
         console.log('Overpass response:', data);
 
         if (data.elements && data.elements.length > 0) {
-          streetSource.clear(); // Limpiar datos previos
+          streetSource.clear();
 
           const features = data.elements
             .filter((element) => element.type === 'way' && element.geometry)
@@ -71,27 +74,35 @@ const StreetRenderer = ({ map, streetSource, isMapReady, params }) => {
               return feature;
             });
 
-          console.log('Features created:', features);
           streetSource.addFeatures(features);
 
-          // Ajustar la vista del mapa al contenido
           const extent = streetSource.getExtent();
           if (extent && extent.every((value) => value !== Infinity)) {
             console.log('Fitting map to extent:', extent);
-            //map.getView().fit(extent, { duration: 1000, padding: [50, 50, 50, 50] });
-          } else {
-            console.warn('No valid extent found for the street features.');
+
+            // Ajustar la vista y esperar al evento "moveend"
+            map.getView().fit(extent, { duration: 1000, padding: [50, 50, 50, 50] });
+
+            const onMoveEnd = () => {
+              console.log('Map animation ended.');
+              setIsLoading(false); // Ocultar capa de carga al finalizar el zoom
+              map.un('moveend', onMoveEnd); // Desregistrar el evento
+            };
+
+            map.on('moveend', onMoveEnd); // Registrar el evento
           }
         } else {
           console.warn('No street segments found in Overpass API.');
+          setIsLoading(false);
         }
       } catch (error) {
         console.error('Error fetching street data:', error.message);
+        setIsLoading(false);
       }
     };
 
     fetchStreetData();
-  }, [map, streetSource, isMapReady, departamento, calle, pais]);
+  }, [map, streetSource, isMapReady, setIsLoading, departamento, calle, pais]);
 
   return null;
 };

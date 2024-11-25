@@ -14,6 +14,7 @@ const MapCompleto = ({ pais, departamento, calle, children }) => {
   const mapRef = useRef(null);
   const streetSource = useRef(new VectorSource()); // Fuente compartida para calles
   const [isMapReady, setIsMapReady] = useState(false); // Nuevo estado para indicar si el mapa está listo
+  const [isLoading, setIsLoading] = useState(true); // Estado general de carga (incluye hijos)
 
   useEffect(() => {
     console.log('Initializing map...');
@@ -35,6 +36,9 @@ const MapCompleto = ({ pais, departamento, calle, children }) => {
 
       // Marcar el mapa como listo
       setIsMapReady(true);
+
+      // Simular un retraso adicional para cargar elementos
+      setTimeout(() => setIsLoading(false), 1000);
     }
   }, []);
 
@@ -44,7 +48,7 @@ const MapCompleto = ({ pais, departamento, calle, children }) => {
       <div id="map" style={{ width: '100%', height: '100%' }} />
 
       {/* Indicador de carga sobre el mapa */}
-      {!isMapReady && (
+      {isLoading && (
         <div
           style={{
             position: 'absolute',
@@ -52,14 +56,25 @@ const MapCompleto = ({ pais, departamento, calle, children }) => {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(255, 255, 255, 0.7)',
+            backgroundColor: 'rgba(255, 255, 255, 0.8)',
             display: 'flex',
+            flexDirection: 'column',
             justifyContent: 'center',
             alignItems: 'center',
             zIndex: 1000,
           }}
         >
-          <p>Loading map...</p>
+          <div
+            style={{
+              width: '50px',
+              height: '50px',
+              border: '6px solid #ddd',
+              borderTop: '6px solid #007bff',
+              borderRadius: '50%',
+              animation: 'spinner 1s linear infinite',
+            }}
+          ></div>
+          <p style={{ marginTop: '10px', fontSize: '16px', fontWeight: 'bold' }}>Cargando ubicación...</p>
         </div>
       )}
 
@@ -71,6 +86,7 @@ const MapCompleto = ({ pais, departamento, calle, children }) => {
             map: mapRef.current,
             streetSource: streetSource.current,
             isMapReady,
+            setIsLoading, // Pasar control de carga a los hijos
           })
         )}
     </div>
