@@ -150,6 +150,7 @@ const ImportForm = () => {
 
       for (const localidad of localidadesData) {
         await sendToService(localidad);
+        await delay(1000); // Agregamos un retraso de 1 segundo entre cada llamada
       }
     } catch (error) {
       console.error('Error importando localidades:', error.message);
@@ -165,6 +166,7 @@ const ImportForm = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
         body: JSON.stringify(localidad),
       });
