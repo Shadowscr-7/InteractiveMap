@@ -1,158 +1,200 @@
 import { Feature } from 'ol';
 import { LineString, Point } from 'ol/geom';
+import VectorLayer from 'ol/layer/Vector';
+import VectorSource from 'ol/source/Vector';
 import Style from 'ol/style/Style';
 import Stroke from 'ol/style/Stroke';
 import Icon from 'ol/style/Icon';
 import { fromLonLat } from 'ol/proj';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
-const StreetRenderer = ({
-  map,
-  streetSource,
-  isMapReady,
-  setIsLoading,
-  setErrorMessage,
-  setLastCoordinates,
-  params,
-}) => {
-  const { pais, departamento, ciudad, calle, numero, esquina } = params;
+const StreetRenderer = ({ map, params, isMapReady }) => {
+  const { departamento, calle, pais, numero, esquina, ciudad } = params;
+  const streetSource = useRef(new VectorSource()); // Persistencia de la fuente para los datos de la calle
+  const markerSource = useRef(new VectorSource()); // Fuente para los marcadores
 
   useEffect(() => {
-    console.log('StreetRenderer params:', params);
-
-    if (!map || !streetSource || !isMapReady) {
-      console.debug('Map or streetSource is not ready yet. Skipping rendering.');
-      return;
+    if (!map || !isMapReady) {
+      console.debug('Map or isMapReady is not ready yet. Skipping rendering.');
+      return; // Detener ejecución si el mapa no está listo
     }
 
-    const fetchData = async () => {
+    const fetchStreetData = async () => {
+      if (!departamento || !calle || !pais || numero || esquina) {
+        console.debug('Skipping street rendering as markers take precedence.');
+        return; // Evitar pintar la calle si se pasa número o esquina
+      }
+
+      console.log('Fetching street data for:', { departamento, calle, pais, ciudad });
+
+      const overpassQuery = `
+        [out:json];
+        area["name"="${pais}"]["admin_level"="2"]->.countryArea;
+        area["name"="${departamento}"]["admin_level"="4"](area.countryArea)->.searchArea;
+        way["name"~"^${calle}$"](area.searchArea);
+        out geom;
+      `;
+
+      const overpassUrl = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(overpassQuery)}`;
+
       try {
-        setIsLoading(true);
-        setErrorMessage(''); // Limpiar mensajes de error previos
+        const response = await fetch(overpassUrl, {
+          headers: {
+            'User-Agent': 'StreetRenderer/1.0 (youremail@example.com)',
+          },
+        });
 
-        if (!calle && departamento || ciudad) {
-          // Buscar centroide del departamento o ciudad
-          const locationQuery = [ciudad, departamento, pais].filter(Boolean).join(', ');
-          const nominatimUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
-            locationQuery
-          )}&format=json&addressdetails=1`;
-
-          const response = await fetch(nominatimUrl, {
-            headers: {
-              'User-Agent': 'StreetRenderer/1.0 (youremail@example.com)',
-            },
-          });
-
-          if (!response.ok) {
-            throw new Error(`Nominatim API error: ${response.status} ${response.statusText}`);
-          }
-
-          const data = await response.json();
-          console.log('Nominatim response for department or city:', data);
-
-          if (data.length > 0) {
-            const { lon, lat } = data[0];
-            const centerCoordinates = fromLonLat([parseFloat(lon), parseFloat(lat)]);
-
-            map.getView().setCenter(centerCoordinates);
-            map.getView().setZoom(ciudad ? 12 : 10); // Ajustar nivel de zoom según el alcance (ciudad o departamento)
-            setLastCoordinates([parseFloat(lon), parseFloat(lat)]);
-          } else {
-            setErrorMessage('No se encontraron datos para el departamento o ciudad especificados.');
-          }
-
-          return;
+        if (!response.ok) {
+          throw new Error(`Overpass API error: ${response.status} ${response.statusText}`);
         }
 
-        if (calle) {
-          console.log('Fetching street data for:', { pais, departamento, ciudad, calle, numero, esquina });
+        const data = await response.json();
+        console.log('Overpass response:', data);
 
-          const queryParts = [
-            calle,
-            numero ? `${numero}` : '',
-            esquina ? `and ${esquina}` : '',
-            ciudad,
-            departamento,
-            pais,
-          ]
-            .filter(Boolean)
-            .join(', ');
+        if (data.elements && data.elements.length > 0) {
+          streetSource.current.clear(); // Limpiar datos previos
 
-          const nominatimUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
-            queryParts
-          )}&format=json&addressdetails=1`;
+          const features = data.elements
+            .filter((element) => element.type === 'way' && element.geometry)
+            .map((way) => {
+              const coordinates = way.geometry.map(({ lon, lat }) => fromLonLat([lon, lat]));
 
-          const response = await fetch(nominatimUrl, {
-            headers: {
-              'User-Agent': 'StreetRenderer/1.0 (youremail@example.com)',
-            },
-          });
-
-          if (!response.ok) {
-            throw new Error(`Nominatim API error: ${response.status} ${response.statusText}`);
-          }
-
-          const data = await response.json();
-          console.log('Nominatim response:', data);
-
-          if (data.length > 0) {
-            streetSource.clear(); // Limpiar puntos anteriores
-
-            data.forEach((result) => {
-              const [lon, lat] = [parseFloat(result.lon), parseFloat(result.lat)];
-
-              const pointFeature = new Feature({
-                geometry: new Point(fromLonLat([lon, lat])),
+              const feature = new Feature({
+                geometry: new LineString(coordinates),
               });
 
-              pointFeature.setStyle(
+              feature.setStyle(
                 new Style({
-                  image: new Icon({
-                    anchor: [0.5, 1], // Anclaje del marcador
-                    src:
-                      'data:image/svg+xml;charset=utf-8,' +
-                      encodeURIComponent(`                    
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="red" stroke="black" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-map-pin">
-                        <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"></path>
-                        <circle cx="12" cy="10" r="3"></circle>
-                      </svg>
-                    `),
-                    scale: 1,
+                  stroke: new Stroke({
+                    color: 'blue', // Color de la calle
+                    width: 4, // Ancho de la línea
                   }),
                 })
               );
 
-              streetSource.addFeature(pointFeature);
-
-              // Actualizar las últimas coordenadas
-              setLastCoordinates([lon, lat]);
-
-              // Centrar el mapa si es un solo punto
-              if (data.length === 1) {
-                map.getView().setCenter(fromLonLat([lon, lat]));
-                map.getView().setZoom(15); // Nivel de zoom estándar
-              }
+              return feature;
             });
 
-            // Si hay múltiples puntos, ajustar el mapa para mostrar todos
-            if (data.length > 1) {
-              const extent = streetSource.getExtent();
-              map.getView().fit(extent, { duration: 1000, padding: [50, 50, 50, 50] });
-            }
+          console.log('Features created:', features);
+          streetSource.current.addFeatures(features);
+
+          // Ajustar la vista del mapa al contenido
+          const extent = streetSource.current.getExtent();
+          if (extent && extent.every((value) => value !== Infinity)) {
+            console.log('Fitting map to extent:', extent);
+            map.getView().fit(extent, { duration: 1000, padding: [50, 50, 50, 50] });
           } else {
-            setErrorMessage('No se encontraron puntos para la dirección especificada.');
+            console.warn('No valid extent found for the street features.');
           }
+        } else {
+          console.warn('No street segments found in Overpass API.');
         }
       } catch (error) {
-        console.error('Error fetching data:', error.message);
-        setErrorMessage('Error al consultar los datos de la dirección.');
-      } finally {
-        setIsLoading(false);
+        console.error('Error fetching street data:', error.message);
       }
     };
 
-    fetchData();
-  }, [map, streetSource, isMapReady, setIsLoading, setErrorMessage, setLastCoordinates, pais, departamento, ciudad, calle, numero, esquina]);
+    const fetchMarkerData = async () => {
+      if (!calle || (!numero && !esquina)) {
+        console.debug('Skipping marker rendering: Calle, Numero or Esquina not provided.');
+        return;
+      }
+
+      console.log('Fetching marker data for:', { calle, numero, esquina });
+
+      const locationQuery = `${calle} ${numero ? `#${numero}` : ''} ${
+        esquina ? `y ${esquina}` : ''
+      }, ${ciudad || ''}, ${departamento}, ${pais}`;
+      const nominatimUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+        locationQuery
+      )}&format=json&addressdetails=1`;
+
+      try {
+        const response = await fetch(nominatimUrl, {
+          headers: {
+            'User-Agent': 'StreetRenderer/1.0 (youremail@example.com)',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Nominatim API error: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log('Nominatim response:', data);
+
+        if (data.length > 0) {
+          markerSource.current.clear(); // Limpiar marcadores previos
+
+          const markers = data.map((result) => {
+            const [lon, lat] = [parseFloat(result.lon), parseFloat(result.lat)];
+
+            const marker = new Feature({
+              geometry: new Point(fromLonLat([lon, lat])),
+            });
+
+            marker.setStyle(
+              new Style({
+                image: new Icon({
+                  anchor: [0.5, 1], // Anclaje del marcador
+                  src:
+                    'data:image/svg+xml;charset=utf-8,' +
+                    encodeURIComponent(`
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="red" stroke="black" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-map-pin">
+                      <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"></path>
+                      <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                  `),
+                  scale: 1,
+                }),
+              })
+            );
+
+            return marker;
+          });
+
+          console.log('Markers created:', markers);
+          markerSource.current.addFeatures(markers);
+
+          // Centrar el mapa en el primer marcador
+          if (markers.length === 1) {
+            const [lon, lat] = [parseFloat(data[0].lon), parseFloat(data[0].lat)];
+            map.getView().setCenter(fromLonLat([lon, lat]));
+            map.getView().setZoom(17); // Zoom cercano para marcadores individuales
+          }
+        } else {
+          console.warn('No markers found for the given parameters.');
+        }
+      } catch (error) {
+        console.error('Error fetching marker data:', error.message);
+      }
+    };
+
+    if (numero || esquina) {
+      fetchMarkerData(); // Priorizar los marcadores si se pasan
+    } else {
+      fetchStreetData(); // Pintar la calle si no hay marcadores
+    }
+  }, [map, isMapReady, departamento, calle, pais, numero, esquina, ciudad]);
+
+  useEffect(() => {
+    console.log('Adding street and marker layers...');
+    const streetLayer = new VectorLayer({
+      source: streetSource.current,
+    });
+    const markerLayer = new VectorLayer({
+      source: markerSource.current,
+    });
+
+    map.addLayer(streetLayer);
+    map.addLayer(markerLayer);
+
+    return () => {
+      console.log('Removing street and marker layers...');
+      map.removeLayer(streetLayer);
+      map.removeLayer(markerLayer);
+    };
+  }, [map]);
 
   return null;
 };
