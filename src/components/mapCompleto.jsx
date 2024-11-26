@@ -237,10 +237,7 @@ const MapCompleto = ({ pais, departamento, ciudad, calle, numero, esquina, child
             display: 'flex',
             flexDirection: 'column',
             gap: '10px',
-            zIndex: 1000,
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-            padding: '10px',
-            borderRadius: '5px',
+            zIndex: 1000
           }}
         >
           {Object.entries(POI_TYPES).map(([key, { tooltip, icon }]) => (

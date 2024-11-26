@@ -5,10 +5,10 @@ import VectorSource from 'ol/source/Vector';
 import Style from 'ol/style/Style';
 import Stroke from 'ol/style/Stroke';
 import Icon from 'ol/style/Icon';
-import { fromLonLat } from 'ol/proj';
+import { fromLonLat, toLonLat, transformExtent } from 'ol/proj';
 import { useEffect, useRef } from 'react';
 
-const StreetRenderer = ({ map, params, isMapReady }) => {
+const StreetRenderer = ({ map, params, isMapReady, setLastCoordinates }) => {
   const { departamento, calle, pais, numero, esquina, ciudad } = params;
   const streetSource = useRef(new VectorSource()); // Persistencia de la fuente para los datos de la calle
   const markerSource = useRef(new VectorSource()); // Fuente para los marcadores
@@ -82,7 +82,24 @@ const StreetRenderer = ({ map, params, isMapReady }) => {
           const extent = streetSource.current.getExtent();
           if (extent && extent.every((value) => value !== Infinity)) {
             console.log('Fitting map to extent:', extent);
+            // Transformar el extent a latitud y longitud (EPSG:4326)
+            const transformedExtent = transformExtent(extent, 'EPSG:3857', 'EPSG:4326');
+            console.log('Transformed extent to lat/lon:', transformedExtent);
+
+            // Calcular el centro en lat/lon
+            const centerLonLat = [
+              (transformedExtent[0] + transformedExtent[2]) / 2, // Longitud media
+              (transformedExtent[1] + transformedExtent[3]) / 2, // Latitud media
+            ];
+            console.log('Calculated center (lat/lon):', centerLonLat);
+
+            // Transformar el centro de vuelta a EPSG:3857 para centrar el mapa
+            const centerMap = fromLonLat(centerLonLat);
+            map.getView().setCenter(centerMap);
             map.getView().fit(extent, { duration: 1000, padding: [50, 50, 50, 50] });
+
+            // Actualizar las coordenadas en formato lat/lon
+            setLastCoordinates(centerLonLat);
           } else {
             console.warn('No valid extent found for the street features.');
           }
@@ -159,8 +176,10 @@ const StreetRenderer = ({ map, params, isMapReady }) => {
           // Centrar el mapa en el primer marcador
           if (markers.length === 1) {
             const [lon, lat] = [parseFloat(data[0].lon), parseFloat(data[0].lat)];
-            map.getView().setCenter(fromLonLat([lon, lat]));
+            const center = fromLonLat([lon, lat]);
+            map.getView().setCenter(center);
             map.getView().setZoom(17); // Zoom cercano para marcadores individuales
+            setLastCoordinates([lon, lat]); // Actualizar coordenadas
           }
         } else {
           console.warn('No markers found for the given parameters.');
@@ -175,7 +194,7 @@ const StreetRenderer = ({ map, params, isMapReady }) => {
     } else {
       fetchStreetData(); // Pintar la calle si no hay marcadores
     }
-  }, [map, isMapReady, departamento, calle, pais, numero, esquina, ciudad]);
+  }, [map, isMapReady, departamento, calle, pais, numero, esquina, ciudad, setLastCoordinates]);
 
   useEffect(() => {
     console.log('Adding street and marker layers...');
