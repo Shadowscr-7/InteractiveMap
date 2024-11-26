@@ -7,12 +7,12 @@ import TileLayer from 'ol/layer/Tile';
 import OSM from 'ol/source/OSM';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
-import { fromLonLat } from 'ol/proj';
+import { fromLonLat, toLonLat } from 'ol/proj';
 import Feature from 'ol/Feature';
 import Point from 'ol/geom/Point';
 import { Icon, Style } from 'ol/style';
 
-const MapCompleto = ({ pais, departamento, ciudad, calle, numero, esquina, children }) => {
+const MapCompleto = ({ pais, departamento, ciudad, calle, numero, esquina, children, onParamsUpdate  }) => {
   const mapRef = useRef(null);
   const streetSource = useRef(new VectorSource());
   const poiLayers = useRef({}); // Almacena capas para cada tipo de POI
@@ -21,6 +21,7 @@ const MapCompleto = ({ pais, departamento, ciudad, calle, numero, esquina, child
   const [errorMessage, setErrorMessage] = useState('');
   const [lastCoordinates, setLastCoordinates] = useState([-56.1645, -34.9011]); // Montevideo por defecto
   const [selectedPOIs, setSelectedPOIs] = useState([]);
+  const markerSource = useRef(new VectorSource()); // Fuente para los marcadores de clic
 
   // Configuración de íconos de POI
   const POI_TYPES = {
@@ -31,6 +32,74 @@ const MapCompleto = ({ pais, departamento, ciudad, calle, numero, esquina, child
     O: { tooltip: 'Otros', icon: '/icons/circle.png' }, // Genérico
     F: { tooltip: 'Farmacia', icon: '/icons/pharmacy.png' },
   };
+
+  const handleMapClick = async (event) => {
+    if (!mapRef.current) return;
+  
+    const coordinate = toLonLat(event.coordinate);
+    console.log('Clicked coordinates:', coordinate);
+  
+    const [lon, lat] = coordinate;
+    const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&addressdetails=1`;
+  
+    try {
+      const response = await fetch(nominatimUrl);
+      if (!response.ok) throw new Error('Error fetching reverse geocoding data.');
+  
+      const data = await response.json();
+      console.log('Reverse geocoding result:', data);
+  
+      const { address } = data;
+  
+      // Actualiza los parámetros con la nueva dirección
+      const updatedParams = {
+        pais: address?.country || '',
+        departamento: address?.state || '',
+        ciudad: address?.city || address?.town || address?.village || '',
+        calle: address?.road || '',
+        numero: address?.house_number || '',
+      };
+  
+      console.log('Updated parameters:', updatedParams);
+  
+      // Elimina los puntos del mapa que correspondan a la dirección anterior
+      markerSource.current.clear(); // Limpia todos los marcadores previos
+  
+      // Añade marcador en la ubicación clickeada
+      const marker = new Feature({
+        geometry: new Point(fromLonLat([lon, lat])),
+      });
+      marker.setStyle(
+        new Style({
+          image: new Icon({
+            anchor: [0.5, 1],
+            src:
+              'data:image/svg+xml;charset=utf-8,' +
+              encodeURIComponent(`
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="red" stroke="black" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-map-pin">
+                <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+            `),
+            scale: 1,
+          }),
+        })
+      );
+      markerSource.current.addFeature(marker);
+  
+      // Centrar el mapa en el lugar del clic
+      mapRef.current.getView().setCenter(fromLonLat([lon, lat]));
+      mapRef.current.getView().setZoom(15);
+  
+      if (onParamsUpdate) {
+        onParamsUpdate(updatedParams); // Llamar al callback con los nuevos parámetros
+      }
+      
+    } catch (error) {
+      console.error('Error in reverse geocoding:', error);
+    }
+  };
+  
 
   // Añade marcadores para un tipo de POI
   const addPOIMarkers = (pois, poiType) => {
@@ -160,6 +229,7 @@ const MapCompleto = ({ pais, departamento, ciudad, calle, numero, esquina, child
       });
 
       mapRef.current.on('pointermove', showPOIInfo);
+      mapRef.current.on('click', handleMapClick); // Escucha clics en el mapa
       setIsMapReady(true);
       setTimeout(() => setIsLoading(false), 1000);
     }
