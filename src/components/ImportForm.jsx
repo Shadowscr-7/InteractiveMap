@@ -24,6 +24,7 @@ const ImportForm = () => {
   const [localidades, setLocalidades] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingLocalidades, setLoadingLocalidades] = useState(false);
+  const [loadingPtosInteres, setLoadingPtosInteres] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
   const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -101,14 +102,13 @@ const ImportForm = () => {
             lon,
           });
 
-          // Enviar cada calle al servicio ImportarCalles
           if (lat && lon) {
             await sendStreetToService({
               name: street.name,
               lat,
               lon,
               place: localidad,
-              departamento: departamento
+              departamento: departamento,
             });
           }
         } catch (error) {
@@ -130,7 +130,7 @@ const ImportForm = () => {
 
   const fetchLocalidades = async () => {
     if (!departamento) {
-      setErrorMessage('Por favor, ingrese un departamento para importar localidades.');
+      alert('Por favor, ingrese un departamento para importar localidades.');
       return;
     }
 
@@ -177,13 +177,102 @@ const ImportForm = () => {
     }
   };
 
+
+  const fetchPtosInteres = async () => {
+    if (!departamento) {
+      alert('Por favor, ingrese un departamento para importar puntos de interés.');
+      return;
+    }
+
+    setLoadingPtosInteres(true);
+
+    const overpassQuery = `
+      [out:json][timeout:25];
+      area["name"="Uruguay"]["admin_level"="2"]->.country;
+      area["name"="${departamento}"]["admin_level"="4"](area.country)->.departamento;
+      (
+        node["amenity"~"pharmacy|school|college|university|bank|townhall|hospital|public_building"](area.departamento);
+        way["amenity"~"pharmacy|school|college|university|bank|townhall|hospital|public_building"](area.departamento);
+        relation["amenity"~"pharmacy|school|college|university|bank|townhall|hospital|public_building"](area.departamento);
+      );
+      out center;
+    `;
+
+    try {
+      const response = await fetch('https://overpass-api.de/api/interpreter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: overpassQuery,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error en Overpass API: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const enrichedPOIs = data.elements.map((element) => ({
+        name: element.tags.name || '',
+        amenity: element.tags.amenity || '',
+        official_name: element.tags['official_name'] || '',
+        phone: element.tags.phone || '',
+        lat: element.lat || (element.center?.lat) || '',
+        lon: element.lon || (element.center?.lon) || '',
+        street: element.tags['addr:street'] || '',
+        place:
+          element.tags['addr:city'] ||
+          element.tags['addr:suburb'] ||
+          element.tags['addr:hamlet'] ||
+          '',
+        housenumber: element.tags['addr:housenumber'] || '',
+        branch: element.tags.branch || '',
+        departamento,
+      }));
+
+      for (const poi of enrichedPOIs) {
+        await sendPOIToService(poi);
+        //await delay(1000); // Delay de 1 segundo entre requests
+      }
+    } catch (error) {
+      console.error('Error importando puntos de interés:', error.message);
+      alert('Hubo un error al importar los puntos de interés.');
+    } finally {
+      setLoadingPtosInteres(false);
+    }
+  };
+
+  const sendPOIToService = async (poi) => {
+    try {
+      console.log('Enviando POI al servicio...', poi); // Log inicial con el POI que se enviará
+  
+      const response = await fetch('http://192.168.1.72:8082/puestos2/rest/ImportarOSM/importarPtosInteres', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify(poi),
+      });
+  
+      console.log('Respuesta del servidor:', response.status); // Log del estado de la respuesta
+  
+      if (!response.ok) {
+        throw new Error(`Error enviando POI: ${response.status}`);
+      }
+  
+      console.log(`POI enviado correctamente: ${poi.name}`);
+    } catch (error) {
+      console.error(`Error al enviar el POI ${poi.name}:`, error.message);
+    }
+  };
+  
+
   const sendToService = async (localidad) => {
     try {
       const response = await fetch('http://192.168.1.72:8082/puestos2/rest/ImportarOSM/ImportarLocalidades', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
+          Accept: 'application/json',
         },
         body: JSON.stringify(localidad),
       });
@@ -204,7 +293,7 @@ const ImportForm = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
+          Accept: 'application/json',
         },
         body: JSON.stringify(street),
       });
@@ -220,10 +309,28 @@ const ImportForm = () => {
   };
 
   return (
-    <Box sx={{ p: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
-      <Box sx={{ p: 4, maxWidth: 800, width: '100%', backgroundColor: 'white', borderRadius: 2, boxShadow: 3 }}>
+    <Box
+      sx={{
+        p: 4,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '100vh',
+        backgroundColor: '#f5f5f5',
+      }}
+    >
+      <Box
+        sx={{
+          p: 4,
+          maxWidth: 800,
+          width: '100%',
+          backgroundColor: 'white',
+          borderRadius: 2,
+          boxShadow: 3,
+        }}
+      >
         <Typography variant="h4" gutterBottom>
-          Importar Calles y Localidades
+          Importar Calles, Localidades y Puntos de Interés
         </Typography>
 
         <Box sx={{ mb: 3, display: 'flex', gap: 2 }}>
@@ -259,6 +366,14 @@ const ImportForm = () => {
             disabled={loadingLocalidades}
           >
             {loadingLocalidades ? <CircularProgress size={24} /> : 'Importar Localidades'}
+          </Button>
+          <Button
+            variant="contained"
+            color="success"
+            onClick={fetchPtosInteres}
+            disabled={loadingPtosInteres}
+          >
+            {loadingPtosInteres ? <CircularProgress size={24} /> : 'Importar Puntos de Interés'}
           </Button>
         </Box>
 
