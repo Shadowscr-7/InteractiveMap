@@ -254,7 +254,7 @@ const MapCompleto = ({ pais, departamento, ciudad, calle, numero, esquina, child
                 width: '40px',
                 height: '40px',
                 borderRadius: '50%',
-                backgroundColor: selectedPOIs.includes(key) ? '#aaa' : '#ccc', // Fondo gris neutro
+                backgroundColor: selectedPOIs.includes(key) ? '#aaa' : '#fff', // Fondo gris neutro
                 color: '#000', // Color de texto negro
                 boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
                 cursor: 'pointer',
