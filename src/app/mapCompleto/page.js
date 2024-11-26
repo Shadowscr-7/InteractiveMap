@@ -44,7 +44,7 @@ const Page = () => {
   esquina={esquina}
 >
   <StreetRenderer params={{ pais, departamento, ciudad, calle, numero, esquina }} />
-</MapCompleto>
+  </MapCompleto>
 
   );
 };
