@@ -233,6 +233,40 @@ const showPOIInfo = (mapEvent) => {
   }
 };
 
+useEffect(() => {
+  const fetchCoordinates = async () => {
+    if (departamento || ciudad) {
+      const query = `${ciudad || ''}, ${departamento || ''}, ${pais || ''}`;
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json`;
+
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Error fetching coordinates.');
+        const data = await response.json();
+
+        if (data.length > 0) {
+          const { lon, lat } = data[0];
+          const newCoordinates = [parseFloat(lon), parseFloat(lat)];
+          console.log(`Fetched coordinates for ${query}: [${lon}, ${lat}]`);
+          setLastCoordinates(newCoordinates);
+
+          // Centrar el mapa inmediatamente después de actualizar coordenadas
+          if (mapRef.current) {
+            mapRef.current.getView().setCenter(fromLonLat(newCoordinates));
+            mapRef.current.getView().setZoom(15);
+          }
+        } else {
+          console.warn(`No coordinates found for ${query}`);
+        }
+      } catch (error) {
+        console.error('Error fetching coordinates:', error);
+      }
+    }
+  };
+
+  fetchCoordinates();
+}, [departamento, ciudad, pais]); // Escucha cambios en `departamento`, `ciudad` o `pais`
+
 
 
 useEffect(() => {
@@ -255,13 +289,23 @@ useEffect(() => {
         zoom: 5,
       }),
     });
-
+    setIsLoading(true);
     mapRef.current.on('pointermove', showPOIInfo);
     mapRef.current.on('click', handleMapClick);
     setIsMapReady(true);
     setTimeout(() => setIsLoading(false), 1000);
+  } else {
+    // Detectar cambios en parámetros y limpiar marcadores
+    if (markerSource.current) {
+      console.log("Limpiando marcadores por cambio de parámetros");
+      markerSource.current.clear(); // Limpia todos los marcadores existentes
+    }
+
+    // Aquí podrías realizar otras acciones según los cambios en los parámetros
+    console.log("Parámetros cambiados: ", { pais, departamento, ciudad, calle, numero, esquina });
   }
-}, []);
+}, [pais, departamento, ciudad, calle, numero, esquina]); // Agregar parámetros como dependencias
+
 
   const handleCenterMap = () => {
     if (mapRef.current && lastCoordinates) {
