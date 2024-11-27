@@ -225,3 +225,38 @@ export const sendStreetToService = async (calle) => {
     throw error;
   }
 };
+
+/**
+ * Servicio para obtener POIs desde el backend.
+ * Endpoint: /ImportarOSM/getPOIs
+ * @param {Object} params - Objeto con los parámetros de búsqueda (departamento, ciudad, POIs).
+ * @returns {Promise<Array>} Lista de POIs.
+ */
+export const fetchPOIs = async (params) => {
+  console.log('Iniciando fetchPOIs con los siguientes parámetros:', params);
+
+  try {
+    const response = await http.post('/getPOIs', params, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    console.log('Respuesta recibida de /getPOIs:', response);
+
+    if (response.status !== 200) {
+      console.error('Error en la respuesta de /getPOIs, código de estado:', response.status);
+      throw new Error('Error fetching POIs');
+    }
+
+    console.log('Datos obtenidos de /getPOIs:', response.data);
+    console.log('Datos obtenidos de /getPOIs 2:', response.data.sdtPOIs);
+
+    return response.data.sdtPOIs || [];
+  } catch (error) {
+    console.error('Error al obtener POIs en fetchPOIs:', error.message);
+    console.error('Detalles del error:', error);
+    throw error;
+  }
+};
+

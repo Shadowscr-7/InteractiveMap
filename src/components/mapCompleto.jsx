@@ -11,6 +11,7 @@ import { fromLonLat, toLonLat } from 'ol/proj';
 import Feature from 'ol/Feature';
 import Point from 'ol/geom/Point';
 import { Icon, Style } from 'ol/style';
+import { fetchPOIs } from '../services/services';
 
 const MapCompleto = ({ pais, departamento, ciudad, calle, numero, esquina, children, onParamsUpdate  }) => {
   const mapRef = useRef(null);
@@ -23,6 +24,8 @@ const MapCompleto = ({ pais, departamento, ciudad, calle, numero, esquina, child
   const [selectedPOIs, setSelectedPOIs] = useState([]);
   const markerSource = useRef(new VectorSource()); // Fuente para los marcadores de clic
 
+  console.log('Parámetros iniciales:', { pais, departamento, ciudad, calle, numero, esquina });
+
   // Configuración de íconos de POI
   const POI_TYPES = {
     H: { tooltip: 'Hospital', icon: '/icons/hospital.png' },
@@ -30,7 +33,7 @@ const MapCompleto = ({ pais, departamento, ciudad, calle, numero, esquina, child
     P: { tooltip: 'Edificio Público', icon: '/icons/public.png' },
     B: { tooltip: 'Banco', icon: '/icons/bank.png' },
     O: { tooltip: 'Otros', icon: '/icons/circle.png' }, // Genérico
-    F: { tooltip: 'Farmacia', icon: '/icons/pharmacy.png' },
+    F: { tooltip: 'Farmacia', icon: '/icons/pharmacy.png' },  
   };
 
   const handleMapClick = async (event) => {
@@ -102,111 +105,123 @@ const MapCompleto = ({ pais, departamento, ciudad, calle, numero, esquina, child
   
 
   // Añade marcadores para un tipo de POI
-  const addPOIMarkers = (pois, poiType) => {
-    if (!poiLayers.current[poiType]) {
-      poiLayers.current[poiType] = new VectorLayer({
-        source: new VectorSource(),
-      });
-      mapRef.current.addLayer(poiLayers.current[poiType]);
-    }
+const addPOIMarkers = (pois, poiType) => {
+  console.log(`Adding POI markers for type: ${poiType}`, pois);
 
-    const layer = poiLayers.current[poiType];
-    const source = layer.getSource();
-    source.clear(); // Limpia los marcadores existentes del tipo seleccionado
-
-    pois.forEach((poi) => {
-      const { PuntosReferenciaLatitud, PuntosReferenciaLongitud } = poi;
-      const coordinates = fromLonLat([
-        parseFloat(PuntosReferenciaLongitud),
-        parseFloat(PuntosReferenciaLatitud),
-      ]);
-
-      const feature = new Feature({
-        geometry: new Point(coordinates),
-        data: poi,
-      });
-
-      feature.setStyle(
-        new Style({
-          image: new Icon({
-            src: POI_TYPES[poiType]?.icon || '/icons/circle.png',
-            scale: 0.05, 
-            anchor: [0.5, 1],
-          }),
-        })
-      );
-
-      source.addFeature(feature);
+  if (!poiLayers.current[poiType]) {
+    poiLayers.current[poiType] = new VectorLayer({
+      source: new VectorSource(),
     });
-  };
+    mapRef.current.addLayer(poiLayers.current[poiType]);
+  }
 
-  const handlePOISelection = async (poiKey) => {
-    const isSelected = selectedPOIs.includes(poiKey);
+  const layer = poiLayers.current[poiType];
+  const source = layer.getSource();
+  source.clear(); // Limpia los marcadores existentes del tipo seleccionado
+  console.log(`Cleared existing markers for type: ${poiType}`);
 
-    const updatedPOIs = isSelected
-      ? selectedPOIs.filter((key) => key !== poiKey)
-      : [...selectedPOIs, poiKey];
+  pois.forEach((poi) => {
+    const { PuntosReferenciaLatitud, PuntosReferenciaLongitud } = poi;
+    const coordinates = fromLonLat([
+      parseFloat(PuntosReferenciaLongitud),
+      parseFloat(PuntosReferenciaLatitud),
+    ]);
 
-    setSelectedPOIs(updatedPOIs);
+    console.log(`Adding marker at coordinates:`, coordinates);
 
-    // Eliminar capa si se deselecciona
-    if (!updatedPOIs.includes(poiKey) && poiLayers.current[poiKey]) {
-      mapRef.current.removeLayer(poiLayers.current[poiKey]);
-      delete poiLayers.current[poiKey];
-      return;
-    }
+    const feature = new Feature({
+      geometry: new Point(coordinates),
+      data: poi,
+    });
 
-    try {
-      setIsLoading(true);
-      const response = await fetch('https://www.riogas.uy/puestos2/rest/ImportarOSM/getPOIs', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          departamento,
-          ciudad,
-          POIs: [poiKey],
+    feature.setStyle(
+      new Style({
+        image: new Icon({
+          src: POI_TYPES[poiType]?.icon || '/icons/circle.png',
+          scale: 0.05,
+          anchor: [0.5, 1],
         }),
-      });
+      })
+    );
 
-      if (response.ok) {
-        const data = await response.json();
-        const pois = data.sdtPOIs || [];
-        addPOIMarkers(pois, poiKey);
-      } else {
-        setErrorMessage('Error fetching POIs');
-      }
-    } catch (error) {
-      console.error('Error fetching POIs:', error);
-      setErrorMessage('Error fetching POIs');
-    } finally {
-      setIsLoading(false);
+    source.addFeature(feature);
+  });
+  console.log(`Markers added for type: ${poiType}`);
+};
+
+const handlePOISelection = async (poiKey) => {
+  console.log(`Handling POI selection for key: ${poiKey}`);
+
+  const isSelected = selectedPOIs.includes(poiKey);
+  console.log(`Is POI already selected? ${isSelected}`);
+
+  const updatedPOIs = isSelected
+    ? selectedPOIs.filter((key) => key !== poiKey)
+    : [...selectedPOIs, poiKey];
+
+  console.log(`Updated POI selection:`, updatedPOIs);
+
+  setSelectedPOIs(updatedPOIs);
+
+  // Eliminar capa si se deselecciona
+  if (!updatedPOIs.includes(poiKey) && poiLayers.current[poiKey]) {
+    console.log(`Removing layer for POI type: ${poiKey}`);
+    mapRef.current.removeLayer(poiLayers.current[poiKey]);
+    delete poiLayers.current[poiKey];
+    return;
+  }
+
+  try {
+    setIsLoading(true);
+    console.log(`Fetching POIs for type: ${poiKey}`);
+
+    // Llamada al servicio
+    const pois = await fetchPOIs({
+      departamento,
+      ciudad,
+      POIs: [poiKey],
+    });
+
+    console.log(`Response Fetched POIs for type: ${poiKey}`, pois);
+
+    addPOIMarkers(pois, poiKey);
+  } catch (error) {
+    console.error('Error al obtener POIs:', error);
+    setErrorMessage('Error al obtener POIs');
+  } finally {
+    setIsLoading(false);
+    console.log(`Finished handling POI selection for key: ${poiKey}`);
+  }
+};
+
+const showPOIInfo = (mapEvent) => {
+  console.log('Showing POI info for map event:', mapEvent);
+
+  const feature = mapEvent.map.getFeaturesAtPixel(mapEvent.pixel)[0];
+  const tooltipElement = document.getElementById('poi-tooltip');
+
+  if (feature) {
+    const data = feature.get('data');
+    console.log('Feature data:', data);
+
+    if (data) {
+      tooltipElement.style.visibility = 'visible';
+      tooltipElement.style.left = `${mapEvent.originalEvent.pageX}px`;
+      tooltipElement.style.top = `${mapEvent.originalEvent.pageY - 50}px`;
+      tooltipElement.innerHTML = `
+        <strong>${data.PuntosReferenciaNombre}</strong><br>
+        ${data.PuntosReferenciaCalle || ''} ${
+        data.PuntosReferenciaNumero ? `#${data.PuntosReferenciaNumero}` : ''
+      }<br>
+        ${data.PuntosReferenciaEsquina ? `Esquina: ${data.PuntosReferenciaEsquina}` : ''}
+      `;
     }
-  };
+  } else {
+    console.log('No feature found at pixel:', mapEvent.pixel);
+    tooltipElement.style.visibility = 'hidden';
+  }
+};
 
-  const showPOIInfo = (mapEvent) => {
-    const feature = mapEvent.map.getFeaturesAtPixel(mapEvent.pixel)[0];
-    const tooltipElement = document.getElementById('poi-tooltip');
-
-    if (feature) {
-      const data = feature.get('data');
-      if (data) {
-        tooltipElement.style.visibility = 'visible';
-        tooltipElement.style.left = `${mapEvent.originalEvent.pageX}px`;
-        tooltipElement.style.top = `${mapEvent.originalEvent.pageY - 50}px`;
-        tooltipElement.innerHTML = `
-          <strong>${data.PuntosReferenciaNombre}</strong><br>
-          ${data.PuntosReferenciaCalle || ''} ${
-          data.PuntosReferenciaNumero ? `#${data.PuntosReferenciaNumero}` : ''
-        }<br>
-          ${data.PuntosReferenciaEsquina ? `Esquina: ${data.PuntosReferenciaEsquina}` : ''}
-        `;
-      }
-    } else {
-      tooltipElement.style.visibility = 'hidden';
-    }
-  };
 
   useEffect(() => {
     if (!mapRef.current) {
@@ -243,9 +258,16 @@ const MapCompleto = ({ pais, departamento, ciudad, calle, numero, esquina, child
   };
 
   return (
-    <div id="map-container" style={{ position: 'relative', width: '100%', height: '100vh' }}>
+    <div
+      id="map-container"
+      style={{
+        position: 'relative',
+        width: '100%',
+        height: '700px', // Alto fijo del mapa
+      }}
+    >
       <div id="map" style={{ width: '100%', height: '100%' }} />
-
+  
       <div
         id="poi-tooltip"
         style={{
@@ -260,7 +282,7 @@ const MapCompleto = ({ pais, departamento, ciudad, calle, numero, esquina, child
           visibility: 'hidden',
         }}
       ></div>
-
+  
       {/* Botón de centrado */}
       {isMapReady && (
         <div
@@ -296,7 +318,7 @@ const MapCompleto = ({ pais, departamento, ciudad, calle, numero, esquina, child
           </div>
         </div>
       )}
-
+  
       {/* Controles de selección de POIs */}
       {isMapReady && (
         <div
@@ -307,7 +329,7 @@ const MapCompleto = ({ pais, departamento, ciudad, calle, numero, esquina, child
             display: 'flex',
             flexDirection: 'column',
             gap: '10px',
-            zIndex: 1000
+            zIndex: 1000,
           }}
         >
           {Object.entries(POI_TYPES).map(([key, { tooltip, icon }]) => (
@@ -334,7 +356,7 @@ const MapCompleto = ({ pais, departamento, ciudad, calle, numero, esquina, child
           ))}
         </div>
       )}
-
+  
       {isLoading && (
         <div
           style={{
@@ -364,7 +386,7 @@ const MapCompleto = ({ pais, departamento, ciudad, calle, numero, esquina, child
           <p style={{ marginTop: '10px', fontSize: '16px', fontWeight: 'bold' }}>Cargando ubicación...</p>
         </div>
       )}
-
+  
       {errorMessage && (
         <div
           style={{
@@ -381,7 +403,7 @@ const MapCompleto = ({ pais, departamento, ciudad, calle, numero, esquina, child
           <p>{errorMessage}</p>
         </div>
       )}
-
+  
       {isMapReady &&
         children &&
         React.Children.map(children, (child) =>
@@ -397,6 +419,7 @@ const MapCompleto = ({ pais, departamento, ciudad, calle, numero, esquina, child
         )}
     </div>
   );
-};
-
-export default MapCompleto;
+  };
+  
+  export default MapCompleto;
+  

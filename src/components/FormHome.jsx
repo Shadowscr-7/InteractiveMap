@@ -102,22 +102,10 @@ const FormHome = ({ onParamsChange }) => {
   };
 
   return (
-    <Paper
-      elevation={3}
-      sx={{
-        padding: 3,
-        borderRadius: 2,
-        backgroundColor: '#f9f9f9',
-        maxWidth: '100%',
-        margin: 'auto',
-      }}
-    >
+    <>
       <Box sx={{ mb: 3 }}>
         <Typography variant="h5" component="h2" gutterBottom>
-          Filtros de Localización
-        </Typography>
-        <Typography variant="body1" color="textSecondary">
-          Selecciona el departamento, ciudad y calle para filtrar los resultados.
+          Datos del Cliente
         </Typography>
       </Box>
 
@@ -195,7 +183,7 @@ const FormHome = ({ onParamsChange }) => {
           />
         </Grid>
       </Grid>
-    </Paper>
+    </>
   );
 };
 
