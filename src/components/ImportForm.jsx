@@ -244,7 +244,7 @@ const ImportForm = () => {
     try {
       console.log('Enviando POI al servicio...', poi); // Log inicial con el POI que se enviará
   
-      const response = await fetch('https://192.168.1.72/puestos2/rest/ImportarOSM/importarPtosInteres', {
+      const response = await fetch('https://www.riogas.uy/puestos2/rest/ImportarOSM/importarPtosInteres', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -268,7 +268,7 @@ const ImportForm = () => {
 
   const sendToService = async (localidad) => {
     try {
-      const response = await fetch('https://192.168.1.72/puestos2/rest/ImportarOSM/ImportarLocalidades', {
+      const response = await fetch('https://www.riogas.uy/puestos2/rest/ImportarOSM/ImportarLocalidades', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -289,7 +289,7 @@ const ImportForm = () => {
 
   const sendStreetToService = async (street) => {
     try {
-      const response = await fetch('https://192.168.1.72/puestos2/rest/ImportarOSM/ImportarCalles', {
+      const response = await fetch('https://www.riogas.uy/puestos2/rest/ImportarOSM/ImportarCalles', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
