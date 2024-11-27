@@ -271,6 +271,7 @@ useEffect(() => {
 
 useEffect(() => {
   if (!mapRef.current) {
+    // Inicialización del mapa si no existe
     const baseLayer = new TileLayer({
       source: new OSM(),
     });
@@ -289,22 +290,41 @@ useEffect(() => {
         zoom: 5,
       }),
     });
+
+    // Eventos del mapa
     setIsLoading(true);
     mapRef.current.on('pointermove', showPOIInfo);
     mapRef.current.on('click', handleMapClick);
     setIsMapReady(true);
     setTimeout(() => setIsLoading(false), 1000);
   } else {
-    // Detectar cambios en parámetros y limpiar marcadores
-    if (markerSource.current) {
+    // Detectar cambios en parámetros y limpiar contenido del mapa
+
+    // 1. Limpiar marcadores
       console.log("Limpiando marcadores por cambio de parámetros");
       markerSource.current.clear(); // Limpia todos los marcadores existentes
-    }
 
-    // Aquí podrías realizar otras acciones según los cambios en los parámetros
+    // 2. Limpiar capas de calles
+      console.log("Limpiando capas de calles por cambio de parámetros");
+      streetSource.current.clear(); // Limpia todas las calles dibujadas
+
+    // 3. Limpiar capas de POIs
+    Object.keys(poiLayers.current).forEach((poiKey) => {
+      const layer = poiLayers.current[poiKey];
+      if (layer) {
+        console.log(`Limpiando capa de POIs para tipo: ${poiKey}`);
+        const source = layer.getSource();
+        source.clear(); // Limpia los puntos de interés de esa capa
+        mapRef.current.removeLayer(layer); // Elimina la capa del mapa
+        delete poiLayers.current[poiKey]; // Borra la referencia de la capa
+      }
+    });
+
+    console.log("Mapa limpiado debido a cambios en los parámetros.");
     console.log("Parámetros cambiados: ", { pais, departamento, ciudad, calle, numero, esquina });
   }
-}, [pais, departamento, ciudad, calle, numero, esquina]); // Agregar parámetros como dependencias
+}, [pais, departamento, ciudad, calle, numero, esquina]); // Dependencias
+
 
 
   const handleCenterMap = () => {

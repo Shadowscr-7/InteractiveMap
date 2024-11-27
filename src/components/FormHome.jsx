@@ -5,7 +5,6 @@ import {
   Box,
   Grid,
   Typography,
-  Paper,
   Autocomplete,
   TextField,
   CircularProgress,
@@ -16,6 +15,8 @@ const FormHome = ({ onParamsChange }) => {
   const [departamento, setDepartamento] = useState(null);
   const [ciudad, setCiudad] = useState(null);
   const [calle, setCalle] = useState(null);
+  const [numeroPuerta, setNumeroPuerta] = useState(''); // Nuevo estado
+  const [calleEsquina, setCalleEsquina] = useState(null); // Nueva calle de esquina
 
   const [departamentos, setDepartamentos] = useState([]);
   const [ciudades, setCiudades] = useState([]);
@@ -79,6 +80,7 @@ const FormHome = ({ onParamsChange }) => {
     } else {
       setCalles([]);
       setCalle(null);
+      setCalleEsquina(null);
     }
   }, [departamento, ciudad]);
 
@@ -87,18 +89,31 @@ const FormHome = ({ onParamsChange }) => {
     setDepartamento(newValue);
     setCiudad(null);
     setCalle(null);
-    onParamsChange({ departamento: newValue, ciudad: null, calle: null });
+    setCalleEsquina(null);
+    onParamsChange({ departamento: newValue, ciudad: null, calle: null, esquina: null });
   };
 
   const handleCiudadChange = (event, newValue) => {
     setCiudad(newValue);
     setCalle(null);
-    onParamsChange({ departamento, ciudad: newValue, calle: null });
+    setCalleEsquina(null);
+    onParamsChange({ departamento, ciudad: newValue, calle: null, esquina: null });
   };
 
   const handleCalleChange = (event, newValue) => {
     setCalle(newValue);
-    onParamsChange({ departamento, ciudad, calle: newValue });
+    onParamsChange({ departamento, ciudad, calle: newValue, esquina: calleEsquina });
+  };
+
+  const handleNumeroPuertaChange = (event) => {
+    const value = event.target.value.replace(/\D/g, ''); // Permitir solo números
+    setNumeroPuerta(value);
+    onParamsChange({ departamento, ciudad, calle, numero: value });
+  };
+
+  const handleCalleEsquinaChange = (event, newValue) => {
+    setCalleEsquina(newValue);
+    onParamsChange({ departamento, ciudad, calle, esquina: newValue });
   };
 
   return (
@@ -110,79 +125,117 @@ const FormHome = ({ onParamsChange }) => {
       </Box>
 
       <Grid container spacing={3}>
-        {/* Combo Departamento */}
-        <Grid item xs={12}>
-          <Autocomplete
-            options={departamentos}
-            getOptionLabel={(option) => option.DepartamentoNombre}
-            value={departamento}
-            onChange={handleDepartamentoChange}
-            renderInput={(params) => (
-              <TextField {...params} label="Departamento" variant="outlined" />
-            )}
-          />
-        </Grid>
+  {/* Columna Izquierda */}
+  <Grid item xs={12} sm={6}>
+    {/* Combo Departamento */}
+    <Autocomplete
+      options={departamentos}
+      getOptionLabel={(option) => option.DepartamentoNombre}
+      value={departamento}
+      onChange={handleDepartamentoChange}
+      renderInput={(params) => (
+        <TextField {...params} label="Departamento" variant="outlined" fullWidth />
+      )}
+    />
+  </Grid>
 
-        {/* Combo Ciudad */}
-        <Grid item xs={12}>
-          <Autocomplete
-            options={ciudades}
-            getOptionLabel={(option) => option.CiudadNombre}
-            value={ciudad}
-            onChange={handleCiudadChange}
-            loading={loadingCiudades}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Ciudad"
-                variant="outlined"
-                InputProps={{
-                  ...params.InputProps,
-                  endAdornment: (
-                    <>
-                      {loadingCiudades ? <CircularProgress color="inherit" size={20} /> : null}
-                      {params.InputProps.endAdornment}
-                    </>
-                  ),
-                }}
-              />
-            )}
-          />
-        </Grid>
+  {/* Combo Ciudad */}
+  <Grid item xs={12} sm={6}>
+    <Autocomplete
+      options={ciudades}
+      getOptionLabel={(option) => option.CiudadNombre}
+      value={ciudad}
+      onChange={handleCiudadChange}
+      loading={loadingCiudades}
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          label="Ciudad"
+          variant="outlined"
+          fullWidth
+          InputProps={{
+            ...params.InputProps,
+            endAdornment: (
+              <>
+                {loadingCiudades ? <CircularProgress color="inherit" size={20} /> : null}
+                {params.InputProps.endAdornment}
+              </>
+            ),
+          }}
+        />
+      )}
+    />
+  </Grid>
 
-        {/* Combo Calle */}
-        <Grid item xs={12}>
-          <Autocomplete
-            options={calles}
-            getOptionLabel={(option) => option.CalleNombre}
-            value={calle}
-            onChange={handleCalleChange}
-            loading={loadingCalles}
-            ListboxProps={{
-              style: {
-                maxHeight: '200px', // Máximo alto del dropdown
-                overflowY: 'auto', // Habilitar scroll interno
-              },
-            }}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Calle"
-                variant="outlined"
-                InputProps={{
-                  ...params.InputProps,
-                  endAdornment: (
-                    <>
-                      {loadingCalles ? <CircularProgress color="inherit" size={20} /> : null}
-                      {params.InputProps.endAdornment}
-                    </>
-                  ),
-                }}
-              />
-            )}
-          />
-        </Grid>
-      </Grid>
+  {/* Combo Calle */}
+  <Grid item xs={12} sm={6}>
+    <Autocomplete
+      options={calles}
+      getOptionLabel={(option) => option.CalleNombre}
+      value={calle}
+      onChange={handleCalleChange}
+      loading={loadingCalles}
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          label="Calle Principal"
+          variant="outlined"
+          fullWidth
+          InputProps={{
+            ...params.InputProps,
+            endAdornment: (
+              <>
+                {loadingCalles ? <CircularProgress color="inherit" size={20} /> : null}
+                {params.InputProps.endAdornment}
+              </>
+            ),
+          }}
+        />
+      )}
+    />
+  </Grid>
+
+  {/* Número de Puerta */}
+  <Grid item xs={12} sm={6}>
+    <TextField
+      label="Número de Puerta"
+      variant="outlined"
+      value={numeroPuerta}
+      onChange={handleNumeroPuertaChange}
+      inputProps={{ maxLength: 6 }} // Limitar a 6 dígitos
+      fullWidth
+    />
+  </Grid>
+
+  {/* Combo Calle Esquina */}
+  <Grid item xs={12} sm={6}>
+    <Autocomplete
+      options={calles}
+      getOptionLabel={(option) => option.CalleNombre}
+      value={calleEsquina}
+      onChange={handleCalleEsquinaChange}
+      loading={loadingCalles}
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          label="Calle Esquina"
+          variant="outlined"
+          fullWidth
+          InputProps={{
+            ...params.InputProps,
+            endAdornment: (
+              <>
+                {loadingCalles ? <CircularProgress color="inherit" size={20} /> : null}
+                {params.InputProps.endAdornment}
+              </>
+            ),
+          }}
+        />
+      )}
+    />
+  </Grid>
+</Grid>
+
     </>
   );
 };

@@ -18,15 +18,20 @@ const StreetRenderer = ({ map, params, isMapReady, setLastCoordinates }) => {
       console.debug('Map or isMapReady is not ready yet. Skipping rendering.');
       return; // Detener ejecución si el mapa no está listo
     }
-
+  
+    // Limpieza inicial de ambas capas antes de cualquier acción
+    console.log('Limpiando capas de calle y marcadores...');
+    streetSource.current.clear(); // Limpia la fuente de calles
+    markerSource.current.clear(); // Limpia la fuente de marcadores
+  
     const fetchStreetData = async () => {
       if (!departamento || !calle || !pais || numero || esquina) {
         console.debug('Skipping street rendering as markers take precedence.');
         return; // Evitar pintar la calle si se pasa número o esquina
       }
-
+  
       console.log('Fetching street data for:', { departamento, calle, pais, ciudad });
-
+  
       const overpassQuery = `
         [out:json];
         area["name"="${pais}"]["admin_level"="2"]->.countryArea;
@@ -34,35 +39,23 @@ const StreetRenderer = ({ map, params, isMapReady, setLastCoordinates }) => {
         way["name"~"^${calle}$"](area.searchArea);
         out geom;
       `;
-
+  
       const overpassUrl = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(overpassQuery)}`;
-
+  
       try {
-        const response = await fetch(overpassUrl, {
-          headers: {
-            'User-Agent': 'StreetRenderer/1.0 (youremail@example.com)',
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`Overpass API error: ${response.status} ${response.statusText}`);
-        }
-
+        const response = await fetch(overpassUrl);
+        if (!response.ok) throw new Error(`Overpass API error: ${response.status} ${response.statusText}`);
+  
         const data = await response.json();
-        console.log('Overpass response:', data);
-
         if (data.elements && data.elements.length > 0) {
-          streetSource.current.clear(); // Limpiar datos previos
-
           const features = data.elements
             .filter((element) => element.type === 'way' && element.geometry)
             .map((way) => {
               const coordinates = way.geometry.map(({ lon, lat }) => fromLonLat([lon, lat]));
-
               const feature = new Feature({
                 geometry: new LineString(coordinates),
               });
-
+  
               feature.setStyle(
                 new Style({
                   stroke: new Stroke({
@@ -71,35 +64,17 @@ const StreetRenderer = ({ map, params, isMapReady, setLastCoordinates }) => {
                   }),
                 })
               );
-
+  
               return feature;
             });
-
+  
           console.log('Features created:', features);
           streetSource.current.addFeatures(features);
-
+  
           // Ajustar la vista del mapa al contenido
           const extent = streetSource.current.getExtent();
           if (extent && extent.every((value) => value !== Infinity)) {
-            console.log('Fitting map to extent:', extent);
-            // Transformar el extent a latitud y longitud (EPSG:4326)
-            const transformedExtent = transformExtent(extent, 'EPSG:3857', 'EPSG:4326');
-            console.log('Transformed extent to lat/lon:', transformedExtent);
-
-            // Calcular el centro en lat/lon
-            const centerLonLat = [
-              (transformedExtent[0] + transformedExtent[2]) / 2, // Longitud media
-              (transformedExtent[1] + transformedExtent[3]) / 2, // Latitud media
-            ];
-            console.log('Calculated center (lat/lon):', centerLonLat);
-
-            // Transformar el centro de vuelta a EPSG:3857 para centrar el mapa
-            const centerMap = fromLonLat(centerLonLat);
-            map.getView().setCenter(centerMap);
             map.getView().fit(extent, { duration: 1000, padding: [50, 50, 50, 50] });
-
-            // Actualizar las coordenadas en formato lat/lon
-            setLastCoordinates(centerLonLat);
           } else {
             console.warn('No valid extent found for the street features.');
           }
@@ -110,50 +85,35 @@ const StreetRenderer = ({ map, params, isMapReady, setLastCoordinates }) => {
         console.error('Error fetching street data:', error.message);
       }
     };
-
+  
     const fetchMarkerData = async () => {
       if (!calle || (!numero && !esquina)) {
         console.debug('Skipping marker rendering: Calle, Numero or Esquina not provided.');
         return;
       }
-
+  
       console.log('Fetching marker data for:', { calle, numero, esquina });
-
-      const locationQuery = `${calle} ${numero ? `#${numero}` : ''} ${
-        esquina ? `y ${esquina}` : ''
-      }, ${ciudad || ''}, ${departamento}, ${pais}`;
-      const nominatimUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
-        locationQuery
-      )}&format=json&addressdetails=1`;
-
+  
+      const locationQuery = `${calle} ${numero ? `#${numero}` : ''} ${esquina ? `y ${esquina}` : ''}, ${ciudad || ''}, ${departamento}, ${pais}`;
+      const nominatimUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(locationQuery)}&format=json&addressdetails=1`;
+  
       try {
-        const response = await fetch(nominatimUrl, {
-          headers: {
-            'User-Agent': 'StreetRenderer/1.0 (youremail@example.com)',
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`Nominatim API error: ${response.status} ${response.statusText}`);
-        }
-
+        const response = await fetch(nominatimUrl);
+        if (!response.ok) throw new Error(`Nominatim API error: ${response.status} ${response.statusText}`);
+  
         const data = await response.json();
-        console.log('Nominatim response:', data);
-
         if (data.length > 0) {
-          markerSource.current.clear(); // Limpiar marcadores previos
-
           const markers = data.map((result) => {
             const [lon, lat] = [parseFloat(result.lon), parseFloat(result.lat)];
-
+  
             const marker = new Feature({
               geometry: new Point(fromLonLat([lon, lat])),
             });
-
+  
             marker.setStyle(
               new Style({
                 image: new Icon({
-                  anchor: [0.5, 1], // Anclaje del marcador
+                  anchor: [0.5, 1],
                   src:
                     'data:image/svg+xml;charset=utf-8,' +
                     encodeURIComponent(`
@@ -166,20 +126,17 @@ const StreetRenderer = ({ map, params, isMapReady, setLastCoordinates }) => {
                 }),
               })
             );
-
+  
             return marker;
           });
-
+  
           console.log('Markers created:', markers);
           markerSource.current.addFeatures(markers);
-
-          // Centrar el mapa en el primer marcador
+  
           if (markers.length === 1) {
             const [lon, lat] = [parseFloat(data[0].lon), parseFloat(data[0].lat)];
-            const center = fromLonLat([lon, lat]);
-            map.getView().setCenter(center);
-            map.getView().setZoom(17); // Zoom cercano para marcadores individuales
-            setLastCoordinates([lon, lat]); // Actualizar coordenadas
+            map.getView().setCenter(fromLonLat([lon, lat]));
+            map.getView().setZoom(17);
           }
         } else {
           console.warn('No markers found for the given parameters.');
@@ -188,13 +145,14 @@ const StreetRenderer = ({ map, params, isMapReady, setLastCoordinates }) => {
         console.error('Error fetching marker data:', error.message);
       }
     };
-
+  
     if (numero || esquina) {
-      fetchMarkerData(); // Priorizar los marcadores si se pasan
+      fetchMarkerData();
     } else {
-      fetchStreetData(); // Pintar la calle si no hay marcadores
+      fetchStreetData();
     }
-  }, [map, isMapReady, departamento, calle, pais, numero, esquina, ciudad, setLastCoordinates]);
+  }, [map, isMapReady, departamento, calle, pais, numero, esquina, ciudad]);
+  
 
   useEffect(() => {
     console.log('Adding street and marker layers...');

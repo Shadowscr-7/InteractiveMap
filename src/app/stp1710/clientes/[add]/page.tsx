@@ -23,6 +23,7 @@ const AddCliente = () => {
       departamento: updatedParams.departamento?.DepartamentoNombre || prev.departamento,
       ciudad: updatedParams.ciudad?.CiudadNombre || prev.ciudad,
       calle: updatedParams.calle?.CalleNombre || prev.calle,
+      numero: updatedParams.numero || "",
     }));
   };
 
