@@ -23,7 +23,11 @@ const MapCompleto = ({ pais, departamento, ciudad, calle, numero, esquina, child
   const [lastCoordinates, setLastCoordinates] = useState([-56.1645, -34.9011]); // Montevideo por defecto
   const [selectedPOIs, setSelectedPOIs] = useState([]);
   const markerSource = useRef(new VectorSource()); // Fuente para los marcadores de clic
-
+  const markerLayer = useRef(
+    new VectorLayer({
+      source: markerSource.current,
+    })
+  );
   console.log('Parámetros iniciales:', { pais, departamento, ciudad, calle, numero, esquina });
 
   // Configuración de íconos de POI
@@ -67,6 +71,7 @@ const MapCompleto = ({ pais, departamento, ciudad, calle, numero, esquina, child
   
       // Elimina los puntos del mapa que correspondan a la dirección anterior
       markerSource.current.clear(); // Limpia todos los marcadores previos
+      console.log('Cleared previous markers.');
   
       // Añade marcador en la ubicación clickeada
       const marker = new Feature({
@@ -88,20 +93,23 @@ const MapCompleto = ({ pais, departamento, ciudad, calle, numero, esquina, child
           }),
         })
       );
+  
       markerSource.current.addFeature(marker);
+      console.log('Added marker to markerSource:', marker);
   
       // Centrar el mapa en el lugar del clic
       mapRef.current.getView().setCenter(fromLonLat([lon, lat]));
       mapRef.current.getView().setZoom(15);
+      console.log('Map centered on marker.');
   
       if (onParamsUpdate) {
         onParamsUpdate(updatedParams); // Llamar al callback con los nuevos parámetros
       }
-      
     } catch (error) {
       console.error('Error in reverse geocoding:', error);
     }
   };
+  
   
 
   // Añade marcadores para un tipo de POI
@@ -227,32 +235,33 @@ const showPOIInfo = (mapEvent) => {
 
 
 
-  useEffect(() => {
-    if (!mapRef.current) {
-      const baseLayer = new TileLayer({
-        source: new OSM(),
-      });
+useEffect(() => {
+  if (!mapRef.current) {
+    const baseLayer = new TileLayer({
+      source: new OSM(),
+    });
 
-      mapRef.current = new Map({
-        target: 'map',
-        layers: [
-          baseLayer,
-          new VectorLayer({
-            source: streetSource.current,
-          }),
-        ],
-        view: new View({
-          center: fromLonLat(lastCoordinates),
-          zoom: 5,
+    mapRef.current = new Map({
+      target: 'map',
+      layers: [
+        baseLayer,
+        new VectorLayer({
+          source: streetSource.current,
         }),
-      });
+        markerLayer.current, // Agregar explícitamente la capa de marcadores al mapa
+      ],
+      view: new View({
+        center: fromLonLat(lastCoordinates),
+        zoom: 5,
+      }),
+    });
 
-      mapRef.current.on('pointermove', showPOIInfo);
-      mapRef.current.on('click', handleMapClick); // Escucha clics en el mapa
-      setIsMapReady(true);
-      setTimeout(() => setIsLoading(false), 1000);
-    }
-  }, []);
+    mapRef.current.on('pointermove', showPOIInfo);
+    mapRef.current.on('click', handleMapClick);
+    setIsMapReady(true);
+    setTimeout(() => setIsLoading(false), 1000);
+  }
+}, []);
 
   const handleCenterMap = () => {
     if (mapRef.current && lastCoordinates) {
