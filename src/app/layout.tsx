@@ -5,6 +5,7 @@ import { Box, CssBaseline, Toolbar } from '@mui/material';
 import Header from '../components/dashboard/Header';
 import Sidebar from '../components/dashboard/Sidebar';
 import Footer from '../components/dashboard/Footer';
+import './globals.css';
 
 export default function RootLayout({
   children,

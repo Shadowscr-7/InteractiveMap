@@ -195,32 +195,36 @@ const handlePOISelection = async (poiKey) => {
 };
 
 const showPOIInfo = (mapEvent) => {
-  console.log('Showing POI info for map event:', mapEvent);
+  const tooltipElement = document.getElementById('poi-tooltip');
+  if (!tooltipElement) {
+    console.error('Tooltip element not found in DOM');
+    return;
+  }
 
   const feature = mapEvent.map.getFeaturesAtPixel(mapEvent.pixel)[0];
-  const tooltipElement = document.getElementById('poi-tooltip');
 
   if (feature) {
     const data = feature.get('data');
-    console.log('Feature data:', data);
-
     if (data) {
+      const mapContainer = document.getElementById('map'); // Contenedor del mapa
+      const rect = mapContainer.getBoundingClientRect(); // Obtener las coordenadas del contenedor del mapa
+
       tooltipElement.style.visibility = 'visible';
-      tooltipElement.style.left = `${mapEvent.originalEvent.pageX}px`;
-      tooltipElement.style.top = `${mapEvent.originalEvent.pageY - 50}px`;
+      tooltipElement.style.left = `${mapEvent.originalEvent.clientX - rect.left + 15}px`; // Ajustar posición horizontal
+      tooltipElement.style.top = `${mapEvent.originalEvent.clientY - rect.top + 15}px`; // Ajustar posición vertical
       tooltipElement.innerHTML = `
         <strong>${data.PuntosReferenciaNombre}</strong><br>
         ${data.PuntosReferenciaCalle || ''} ${
-        data.PuntosReferenciaNumero ? `#${data.PuntosReferenciaNumero}` : ''
-      }<br>
+          data.PuntosReferenciaNumero ? `#${data.PuntosReferenciaNumero}` : ''
+        }<br>
         ${data.PuntosReferenciaEsquina ? `Esquina: ${data.PuntosReferenciaEsquina}` : ''}
       `;
     }
   } else {
-    console.log('No feature found at pixel:', mapEvent.pixel);
     tooltipElement.style.visibility = 'hidden';
   }
 };
+
 
 
   useEffect(() => {
