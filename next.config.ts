@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/api/:path*', // Ruta en tu frontend
-        destination: 'http://192.168.1.72:8082/ICA_Geos_/rest/:path*', // URL del backend
+        destination: 'https://www.riogas.uy/puestos2/rest/ImportarOSM/:path*', // Ruta base del backend
       },
     ];
   },
