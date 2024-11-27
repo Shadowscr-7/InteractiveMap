@@ -31,7 +31,7 @@ export const getDepartamentos = async () => {
 export const getCiudades = async (departamentoId) => {
   try {
     const response = await http.get('/getCiudades', {
-      params: { DepartamentoId: departamentoId },
+      params: { Departamentoid: departamentoId },
       withCredentials: true,
     });
     return response.data.sdtCiudades;
@@ -169,10 +169,20 @@ export const fetchPuntosInteresFromOverpass = async (departamento) => {
 
     return response.data.elements.map((element) => ({
       name: element.tags.name || '',
-      amenity: element.tags.amenity || '',
-      lat: element.lat || element.center?.lat || '',
-      lon: element.lon || element.center?.lon || '',
-      departamento,
+        amenity: element.tags.amenity || '',
+        official_name: element.tags['official_name'] || '',
+        phone: element.tags.phone || '',
+        lat: element.lat || (element.center?.lat) || '',
+        lon: element.lon || (element.center?.lon) || '',
+        street: element.tags['addr:street'] || '',
+        place:
+          element.tags['addr:city'] ||
+          element.tags['addr:suburb'] ||
+          element.tags['addr:hamlet'] ||
+          '',
+        housenumber: element.tags['addr:housenumber'] || '',
+        branch: element.tags.branch || '',
+        departamento,
     }));
   } catch (error) {
     console.error('Error al obtener puntos de interés desde Overpass:', error);
