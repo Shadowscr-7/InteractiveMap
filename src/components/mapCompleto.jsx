@@ -158,7 +158,7 @@ const MapCompleto = ({ pais, departamento, ciudad, calle, numero, esquina, child
 
     try {
       setIsLoading(true);
-      const response = await fetch('https://192.168.1.72/puestos2/rest/ImportarOSM/getPOIs', {
+      const response = await fetch('https://www.riogas.uy/puestos2/rest/ImportarOSM/getPOIs', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
