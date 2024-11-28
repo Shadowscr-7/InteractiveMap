@@ -44,18 +44,22 @@ const FormHome = ({ onParamsChange, params }) => {
         (cal) => cal.CalleNombre === params.calle
       );
       console.log("Calle encontrada:", calleEncontrada);
-  
+
+      // Buscar y establecer la calle esquina
+      const esquinaEncontrada = calles.find(
+        (cal) => cal.CalleNombre === params.esquina
+      );
+      console.log("Calle esquina encontrada:", esquinaEncontrada);
+
       setDepartamento(departamentoEncontrado || null);
       setCiudad(ciudadEncontrada || null);
       setCalle(calleEncontrada || null);
+      setCalleEsquina(esquinaEncontrada || null);
   
       // Manejo de múltiples números de puerta
       const numerosPuerta = params.numero ? params.numero.split(',') : [""]; // Divide los números o asigna un array con cadena vacía
       setNumeroPuerta(numerosPuerta[0] || ''); // Toma el primer número o asigna una cadena vacía
       console.log("Número de puerta procesado:", numerosPuerta[0]);
-  
-      setCalleEsquina(null);
-      console.log("Calle esquina establecida como null.");
     }
   }, [params, departamentos, ciudades, calles]);
   

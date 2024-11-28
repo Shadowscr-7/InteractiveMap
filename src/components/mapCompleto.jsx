@@ -43,6 +43,7 @@ const MapCompleto = ({ params, children, onParamsUpdate }) => {
     O: { tooltip: 'Otros', icon: '/icons/circle.png' }, // Genérico
     F: { tooltip: 'Farmacia', icon: '/icons/pharmacy.png' },  
   };
+  
 
   const handleMapClick = async (event) => {
     if (!mapRef.current) return;
@@ -53,7 +54,48 @@ const MapCompleto = ({ params, children, onParamsUpdate }) => {
     const [lon, lat] = coordinate;
     const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&addressdetails=1`;
   
+    const fetchNearbyStreets = async (lat, lon, roadName) => {
+      const overpassQuery = `
+        [out:json];
+        node(around:50,${lat},${lon})["highway"];
+        way(bn)["highway"];
+        out body;
+      `;
+  
+      try {
+        const response = await fetch('https://overpass-api.de/api/interpreter', {
+          method: 'POST',
+          body: overpassQuery,
+          headers: { 'Content-Type': 'text/plain' },
+        });
+        if (!response.ok) throw new Error('Error fetching Overpass data.');
+        const overpassData = await response.json();
+        const ways = overpassData.elements;
+  
+        // Filtrar calles para encontrar intersecciones
+        const mainStreet = ways.find(
+          (way) => way.tags && way.tags.name === roadName
+        );
+        if (!mainStreet) {
+          console.warn('Main street not found in Overpass data.');
+          return [];
+        }
+  
+        const mainStreetNodes = new Set(mainStreet.nodes);
+        const intersectingStreets = ways.filter((way) => {
+          if (!way.tags || !way.tags.name || way.tags.name === roadName) return false;
+          return way.nodes.some((node) => mainStreetNodes.has(node));
+        });
+  
+        return intersectingStreets.map((way) => way.tags.name);
+      } catch (error) {
+        console.error('Error fetching nearby streets:', error);
+        return [];
+      }
+    };
+  
     try {
+      // Geocodificación inversa con Nominatim
       const response = await fetch(nominatimUrl);
       if (!response.ok) throw new Error('Error fetching reverse geocoding data.');
   
@@ -69,9 +111,23 @@ const MapCompleto = ({ params, children, onParamsUpdate }) => {
         ciudad: address?.city || address?.town || address?.village || '',
         calle: address?.road || '',
         numero: address?.house_number || '',
+        esquina: "",
       };
   
       console.log('Updated parameters:', updatedParams);
+  
+      // Consulta adicional a Overpass para las esquinas
+      if (updatedParams.calle) {
+        const nearbyStreets = await fetchNearbyStreets(lat, lon, updatedParams.calle);
+        if (nearbyStreets.length > 0) {
+          console.log('Esquinas encontradas:', nearbyStreets);
+          updatedParams.esquina = nearbyStreets[0];
+        } else {
+          console.log('No se encontraron esquinas cercanas.');
+        }
+      }
+  
+      console.log('Final updated parameters:', updatedParams);
   
       // Elimina los puntos del mapa que correspondan a la dirección anterior
       markerSource.current.clear(); // Limpia todos los marcadores previos
@@ -106,13 +162,15 @@ const MapCompleto = ({ params, children, onParamsUpdate }) => {
       mapRef.current.getView().setZoom(15);
       console.log('Map centered on marker.');
   
+      // Llama al callback con los parámetros actualizados
       if (onParamsUpdate) {
-        onParamsUpdate(updatedParams); // Llamar al callback con los nuevos parámetros
+        onParamsUpdate(updatedParams);
       }
     } catch (error) {
-      console.error('Error in reverse geocoding:', error);
+      console.error('Error in reverse geocoding or fetching nearby streets:', error);
     }
   };
+  
   
   
 
