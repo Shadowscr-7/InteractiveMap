@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 import { getDepartamentos, getCiudades, getCalles } from '../services/services';
 
-const FormHome = ({ onParamsChange }) => {
+const FormHome = ({ onParamsChange, params }) => {
   const [departamento, setDepartamento] = useState(null);
   const [ciudad, setCiudad] = useState(null);
   const [calle, setCalle] = useState(null);
@@ -24,6 +24,42 @@ const FormHome = ({ onParamsChange }) => {
 
   const [loadingCiudades, setLoadingCiudades] = useState(false);
   const [loadingCalles, setLoadingCalles] = useState(false);
+
+  // Sincroniza los estados del formulario con los nuevos parámetros
+  useEffect(() => {
+    if (params) {
+      console.log("Params recibidos:", params);
+  
+      const departamentoEncontrado = departamentos.find(
+        (dep) => dep.DepartamentoNombre === params.departamento
+      );
+      console.log("Departamento encontrado:", departamentoEncontrado);
+  
+      const ciudadEncontrada = ciudades.find(
+        (ciu) => ciu.CiudadNombre === params.ciudad
+      );
+      console.log("Ciudad encontrada:", ciudadEncontrada);
+  
+      const calleEncontrada = calles.find(
+        (cal) => cal.CalleNombre === params.calle
+      );
+      console.log("Calle encontrada:", calleEncontrada);
+  
+      setDepartamento(departamentoEncontrado || null);
+      setCiudad(ciudadEncontrada || null);
+      setCalle(calleEncontrada || null);
+  
+      // Manejo de múltiples números de puerta
+      const numerosPuerta = params.numero ? params.numero.split(',') : [""]; // Divide los números o asigna un array con cadena vacía
+      setNumeroPuerta(numerosPuerta[0] || ''); // Toma el primer número o asigna una cadena vacía
+      console.log("Número de puerta procesado:", numerosPuerta[0]);
+  
+      setCalleEsquina(null);
+      console.log("Calle esquina establecida como null.");
+    }
+  }, [params, departamentos, ciudades, calles]);
+  
+  
 
   // Obtener departamentos al cargar
   useEffect(() => {
@@ -63,11 +99,13 @@ const FormHome = ({ onParamsChange }) => {
 
   // Obtener calles al seleccionar un departamento y ciudad
   useEffect(() => {
-    if (departamento && ciudad) {
+    if (departamento) {
       const fetchCalles = async () => {
         setLoadingCalles(true);
         try {
-          const calles = await getCalles(departamento.DepartamentoId, ciudad.CiudadId);
+          // Si ciudad no está definida, usar "0" como predeterminado
+          const ciudadId = ciudad?.CiudadId || "0";
+          const calles = await getCalles(departamento.DepartamentoId, ciudadId);
           setCalles(calles || []);
         } catch (error) {
           console.error('Error al obtener calles:', error);
@@ -75,7 +113,7 @@ const FormHome = ({ onParamsChange }) => {
           setLoadingCalles(false);
         }
       };
-
+  
       fetchCalles();
     } else {
       setCalles([]);
@@ -83,6 +121,7 @@ const FormHome = ({ onParamsChange }) => {
       setCalleEsquina(null);
     }
   }, [departamento, ciudad]);
+  
 
   // Manejo de eventos de cambio
   const handleDepartamentoChange = (event, newValue) => {

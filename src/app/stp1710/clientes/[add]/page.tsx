@@ -24,6 +24,7 @@ const AddCliente = () => {
       ciudad: updatedParams.ciudad?.CiudadNombre || prev.ciudad,
       calle: updatedParams.calle?.CalleNombre || prev.calle,
       numero: updatedParams.numero || "",
+      esquina: updatedParams.esquina?.CalleNombre || "",
     }));
   };
 
@@ -74,7 +75,10 @@ const AddCliente = () => {
             boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
           }}
         >
-          <FormHome onParamsChange={handleParamsChange} />
+          <FormHome
+            onParamsChange={handleParamsChange}
+            params={params} // Pasa los parámetros actuales al formulario
+          />
         </Box>
 
         {/* Mapa */}
