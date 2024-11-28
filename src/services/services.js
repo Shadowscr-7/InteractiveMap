@@ -260,3 +260,29 @@ export const fetchPOIs = async (params) => {
   }
 };
 
+/**
+ * Servicio para obtener el identificador desde el backend.
+ * Endpoint: /ImportarOSM/getIdentificador
+ * @param {Object} params - Objeto con los parámetros de búsqueda (Departamento, Ciudad, Calle, Tipo).
+ * @returns {Promise<Object>} Identificador correspondiente a los datos enviados.
+ */
+export const getIdentificador = async (params) => {
+  try {
+    const response = await http.post('/getIdentificador',
+      params,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Cookie: 'GX_CLIENT_ID=cbf08e02-eb36-4c6b-b019-eda6ae23d7eb',
+        },
+      }
+    );
+
+    console.log('Identificador obtenido correctamente:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Error al obtener el identificador:', error.message);
+    console.error('Detalles del error:', error);
+    throw error;
+  }
+};

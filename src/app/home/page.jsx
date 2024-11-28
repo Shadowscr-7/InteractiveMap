@@ -15,6 +15,10 @@ const HomePage = () => {
       numero: '',
       esquina: ''
     });
+
+    const [departamento, setDepartamento] = useState(null);
+    const [ciudad, setCiudad] = useState(null);
+    const [calle, setCalle] = useState(null);
   
     const handleParamsChange = (updatedParams) => {
         setParams((prev) => {
@@ -76,7 +80,12 @@ const HomePage = () => {
               justifyContent: 'center',
             }}
           >
-            <FormHome onParamsChange={handleParamsChange} params={params}/>
+        <FormHome onParamsChange={handleParamsChange} params={params} departamento={departamento}
+            setDepartamento={setDepartamento}
+            ciudad={ciudad}
+            setCiudad={setCiudad}
+            calle={calle}
+            setCalle={setCalle}/>
           </Paper>
         </Grid>
 
@@ -90,7 +99,9 @@ const HomePage = () => {
               padding: 3,
             }}
           >
-            <MapCompleto params={params}>
+            <MapCompleto params={params} setDepartamento={setDepartamento}
+        setCiudad={setCiudad}
+        setCalle={setCalle}>
              <StreetRenderer />
             </MapCompleto>
           </Paper>
