@@ -91,25 +91,32 @@ const StreetRenderer = ({ map, params, isMapReady, setLastCoordinates }) => {
         console.debug('Skipping marker rendering: Calle, Numero or Esquina not provided.');
         return;
       }
-  
+    
       console.log('Fetching marker data for:', { calle, numero, esquina });
-  
+    
       const locationQuery = `${calle} ${numero ? `#${numero}` : ''} ${esquina ? `y ${esquina}` : ''}, ${ciudad || ''}, ${departamento}, ${pais}`;
       const nominatimUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(locationQuery)}&format=json&addressdetails=1`;
-  
+    
       try {
         const response = await fetch(nominatimUrl);
         if (!response.ok) throw new Error(`Nominatim API error: ${response.status} ${response.statusText}`);
-  
+    
         const data = await response.json();
+    
         if (data.length > 0) {
-          const markers = data.map((result) => {
-            const [lon, lat] = [parseFloat(result.lon), parseFloat(result.lat)];
-  
+          // Filtrar resultados válidos por osm_type
+          const validResult = data.find((result) =>
+            ["node", "place", "house"].includes(result.osm_type)
+          );
+    
+          if (validResult) {
+            const [lon, lat] = [parseFloat(validResult.lon), parseFloat(validResult.lat)];
+    
+            // Crear y agregar marcador
             const marker = new Feature({
               geometry: new Point(fromLonLat([lon, lat])),
             });
-  
+    
             marker.setStyle(
               new Style({
                 image: new Icon({
@@ -126,17 +133,16 @@ const StreetRenderer = ({ map, params, isMapReady, setLastCoordinates }) => {
                 }),
               })
             );
-  
-            return marker;
-          });
-  
-          console.log('Markers created:', markers);
-          markerSource.current.addFeatures(markers);
-  
-          if (markers.length === 1) {
-            const [lon, lat] = [parseFloat(data[0].lon), parseFloat(data[0].lat)];
+    
+            markerSource.current.addFeature(marker);
+    
+            // Centrar el mapa en el marcador
             map.getView().setCenter(fromLonLat([lon, lat]));
             map.getView().setZoom(17);
+    
+            console.log('Marker rendered for:', validResult.display_name);
+          } else {
+            console.warn('No valid address found with the specified osm_type (node, place, house).');
           }
         } else {
           console.warn('No markers found for the given parameters.');
@@ -145,6 +151,7 @@ const StreetRenderer = ({ map, params, isMapReady, setLastCoordinates }) => {
         console.error('Error fetching marker data:', error.message);
       }
     };
+    
   
     if (numero || esquina) {
       fetchMarkerData();

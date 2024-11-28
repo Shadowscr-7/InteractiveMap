@@ -17,31 +17,22 @@ const HomePage = () => {
     });
   
     const handleParamsChange = (updatedParams) => {
-      setParams((prev) => {
-        // Extraemos los valores de los parámetros que se desean actualizar
-        const newParams = { ...prev, ...updatedParams };
-  
-        // Si los valores vienen como objetos y necesitamos los nombres, extraemos solo esos valores
-        if (updatedParams.departamento) {
-          newParams.departamento = updatedParams.departamento.DepartamentoNombre || '';
-        }
-        if (updatedParams.ciudad) {
-          newParams.ciudad = updatedParams.ciudad.CiudadNombre || '';
-        }
-        if (updatedParams.calle) {
-          newParams.calle = updatedParams.calle.CalleNombre || '';
-        }
-        if (updatedParams.numero) {
-          newParams.numero = updatedParams.numero || '';
-        }
-        if (updatedParams.esquina) {
-          newParams.esquina = updatedParams.esquina || '';
-        }
-  
-        console.log('Parametros actualizados:', newParams); // Verifica si los parámetros están siendo actualizados correctamente
-        return newParams;
-      });
-    };
+        setParams((prev) => {
+          // Extraemos los valores de los parámetros que se desean actualizar
+          const newParams = { ...prev, ...updatedParams };
+      
+          // Aseguramos que los valores sean cadenas vacías si están nulos o indefinidos
+          newParams.departamento = updatedParams.departamento?.DepartamentoNombre ?? newParams.departamento ?? '';
+          newParams.ciudad = updatedParams.ciudad?.CiudadNombre ?? newParams.ciudad ?? '';
+          newParams.calle = updatedParams.calle?.CalleNombre ?? newParams.calle ?? '';
+          newParams.numero = updatedParams.numero ?? newParams.numero ?? '';
+          newParams.esquina = updatedParams.esquina ?? newParams.esquina ?? '';
+      
+          console.log('Parametros actualizados:', newParams); // Verifica si los parámetros están siendo actualizados correctamente
+          return newParams;
+        });
+      };
+      
 
   return (
     <Box
@@ -74,7 +65,7 @@ const HomePage = () => {
       {/* Contenido Principal */}
       <Grid container spacing={2} sx={{ height: 'calc(100% - 80px)' }}>
         {/* Sección del Formulario */}
-        <Grid item xs={12} md={8}>
+        <Grid item xs={12} md={6}>
           <Paper
             elevation={3}
             sx={{
@@ -90,7 +81,7 @@ const HomePage = () => {
         </Grid>
 
         {/* Sección del Mapa */}
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} md={6}>
           <Paper
             elevation={3}
             sx={{
