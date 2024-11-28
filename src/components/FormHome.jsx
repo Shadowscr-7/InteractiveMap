@@ -152,7 +152,7 @@ const FormHome = ({ onParamsChange, params }) => {
 
   const handleCalleEsquinaChange = (event, newValue) => {
     setCalleEsquina(newValue);
-    onParamsChange({ departamento, ciudad, calle, esquina: newValue });
+    onParamsChange({ departamento, ciudad, calle, numero, esquina: newValue });
   };
 
   return (

@@ -4,17 +4,44 @@ import React, { useState } from 'react';
 import { Grid, Box, Typography, Paper } from '@mui/material';
 import FormHome from '../../components/FormHome';
 import MapCompleto from '../../components/mapCompleto';
+import StreetRenderer from '../../components/streetRenderer';
 
 const HomePage = () => {
-  const [params, setParams] = useState({
-    pais: '',
-    departamento: '',
-    ciudad: '',
-  });
-
-  const handleParamsChange = (updatedParams) => {
-    setParams((prev) => ({ ...prev, ...updatedParams }));
-  };
+    const [params, setParams] = useState({
+      pais: 'Uruguay',
+      departamento: '',
+      ciudad: '',
+      calle: '',
+      numero: '',
+      esquina: ''
+    });
+  
+    const handleParamsChange = (updatedParams) => {
+      setParams((prev) => {
+        // Extraemos los valores de los parámetros que se desean actualizar
+        const newParams = { ...prev, ...updatedParams };
+  
+        // Si los valores vienen como objetos y necesitamos los nombres, extraemos solo esos valores
+        if (updatedParams.departamento) {
+          newParams.departamento = updatedParams.departamento.DepartamentoNombre || '';
+        }
+        if (updatedParams.ciudad) {
+          newParams.ciudad = updatedParams.ciudad.CiudadNombre || '';
+        }
+        if (updatedParams.calle) {
+          newParams.calle = updatedParams.calle.CalleNombre || '';
+        }
+        if (updatedParams.numero) {
+          newParams.numero = updatedParams.numero || '';
+        }
+        if (updatedParams.esquina) {
+          newParams.esquina = updatedParams.esquina || '';
+        }
+  
+        console.log('Parametros actualizados:', newParams); // Verifica si los parámetros están siendo actualizados correctamente
+        return newParams;
+      });
+    };
 
   return (
     <Box
@@ -37,7 +64,7 @@ const HomePage = () => {
         }}
       >
         <Typography variant="h4" component="h1" gutterBottom>
-          Página Principal
+          Alta Cliente
         </Typography>
         <Typography variant="subtitle1" color="textSecondary">
           Selecciona tu ubicación y observa el mapa interactivo.
@@ -47,7 +74,7 @@ const HomePage = () => {
       {/* Contenido Principal */}
       <Grid container spacing={2} sx={{ height: 'calc(100% - 80px)' }}>
         {/* Sección del Formulario */}
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} md={8}>
           <Paper
             elevation={3}
             sx={{
@@ -58,12 +85,12 @@ const HomePage = () => {
               justifyContent: 'center',
             }}
           >
-            <FormHome onParamsChange={handleParamsChange} />
+            <FormHome onParamsChange={handleParamsChange} params={params}/>
           </Paper>
         </Grid>
 
         {/* Sección del Mapa */}
-        <Grid item xs={12} md={8}>
+        <Grid item xs={12} md={4}>
           <Paper
             elevation={3}
             sx={{
@@ -72,7 +99,9 @@ const HomePage = () => {
               padding: 3,
             }}
           >
-            <MapCompleto params={params} />
+            <MapCompleto params={params}>
+             <StreetRenderer />
+            </MapCompleto>
           </Paper>
         </Grid>
       </Grid>

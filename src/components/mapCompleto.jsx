@@ -13,7 +13,7 @@ import Point from 'ol/geom/Point';
 import { Icon, Style } from 'ol/style';
 import { fetchPOIs } from '../services/services';
 
-const MapCompleto = ({ pais, departamento, ciudad, calle, numero, esquina, children, onParamsUpdate  }) => {
+const MapCompleto = ({ params, children, onParamsUpdate }) => {
   const mapRef = useRef(null);
   const streetSource = useRef(new VectorSource());
   const poiLayers = useRef({}); // Almacena capas para cada tipo de POI
@@ -28,6 +28,10 @@ const MapCompleto = ({ pais, departamento, ciudad, calle, numero, esquina, child
       source: markerSource.current,
     })
   );
+  // Accede a los parámetros desde params
+  const { pais, departamento, ciudad, calle, numero, esquina } = params;
+
+  // Log para verificar los parámetros
   console.log('Parámetros iniciales:', { pais, departamento, ciudad, calle, numero, esquina });
 
   // Configuración de íconos de POI
@@ -340,7 +344,7 @@ useEffect(() => {
       style={{
         position: 'relative',
         width: '100%',
-        height: '700px', // Alto fijo del mapa
+        height: '400px', // Alto fijo del mapa
       }}
     >
       <div id="map" style={{ width: '100%', height: '100%' }} />
