@@ -94,63 +94,106 @@ const StreetRenderer = ({ map, params, isMapReady, setLastCoordinates }) => {
     
       console.log('Fetching marker data for:', { calle, numero, esquina });
     
-      const locationQuery = `${calle} ${numero ? `#${numero}` : ''} ${esquina ? `y ${esquina}` : ''}, ${ciudad || ''}, ${departamento}, ${pais}`;
-      const nominatimUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(locationQuery)}&format=json&addressdetails=1`;
-    
       try {
-        const response = await fetch(nominatimUrl);
-        if (!response.ok) throw new Error(`Nominatim API error: ${response.status} ${response.statusText}`);
+        let lon, lat;
     
-        const data = await response.json();
+        if (numero && !esquina) {
+          // Caso: Calle + Número (sin Esquina)
+          const locationQuery = `${calle} ${numero ? `#${numero}` : ''}, ${ciudad || ''}, ${departamento}, ${pais}`;
+          const nominatimUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(locationQuery)}&format=json&addressdetails=1`;
     
-        if (data.length > 0) {
-          // Filtrar resultados válidos por osm_type
+          const response = await fetch(nominatimUrl);
+          if (!response.ok) throw new Error(`Nominatim API error: ${response.status} ${response.statusText}`);
+    
+          const data = await response.json();
           const validResult = data.find((result) =>
             ["node", "place", "house"].includes(result.osm_type)
           );
     
           if (validResult) {
-            const [lon, lat] = [parseFloat(validResult.lon), parseFloat(validResult.lat)];
-    
-            // Crear y agregar marcador
-            const marker = new Feature({
-              geometry: new Point(fromLonLat([lon, lat])),
-            });
-    
-            marker.setStyle(
-              new Style({
-                image: new Icon({
-                  anchor: [0.5, 1],
-                  src:
-                    'data:image/svg+xml;charset=utf-8,' +
-                    encodeURIComponent(`
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="red" stroke="black" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-map-pin">
-                      <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"></path>
-                      <circle cx="12" cy="10" r="3"></circle>
-                    </svg>
-                  `),
-                  scale: 1,
-                }),
-              })
-            );
-    
-            markerSource.current.addFeature(marker);
-    
-            // Centrar el mapa en el marcador
-            map.getView().setCenter(fromLonLat([lon, lat]));
-            map.getView().setZoom(17);
-    
-            console.log('Marker rendered for:', validResult.display_name);
+            lon = parseFloat(validResult.lon);
+            lat = parseFloat(validResult.lat);
+            console.log('Marker data from Nominatim:', validResult.display_name);
           } else {
-            console.warn('No valid address found with the specified osm_type (node, place, house).');
+            console.warn('No valid address found with Nominatim for Calle + Número.');
+            return;
           }
         } else {
-          console.warn('No markers found for the given parameters.');
+          // Caso: Esquina presente
+          const overpassQuery = `
+            [out:json];
+            way["highway"]["name"="${calle}"];
+            way["highway"]["name"="${esquina}"];
+            node(w)[w];
+            out body;
+          `;
+    
+          const response = await fetch('https://overpass-api.de/api/interpreter', {
+            method: 'POST',
+            body: overpassQuery,
+            headers: { 'Content-Type': 'text/plain' },
+          });
+    
+          if (!response.ok) throw new Error('Overpass API error');
+          const overpassData = await response.json();
+    
+          const intersectionNode = overpassData.elements.find((el) => el.type === 'node');
+    
+          if (intersectionNode) {
+            lon = intersectionNode.lon;
+            lat = intersectionNode.lat;
+            console.log('Marker data from Overpass (intersection):', intersectionNode);
+          } else {
+            console.warn('No intersection found for Calle + Esquina.');
+            return;
+          }
+        }
+    
+        if (lon !== undefined && lat !== undefined) {
+          // Crear y agregar marcador
+          const marker = new Feature({
+            geometry: new Point(fromLonLat([lon, lat])),
+          });
+    
+          marker.setStyle(
+            new Style({
+              image: new Icon({
+                anchor: [0.5, 1],
+                src:
+                  'data:image/svg+xml;charset=utf-8,' +
+                  encodeURIComponent(`
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="red" stroke="black" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-map-pin">
+                    <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                  </svg>
+                `),
+                scale: 1,
+              }),
+            })
+          );
+    
+          markerSource.current.addFeature(marker);
+    
+          // Centrar el mapa en el marcador
+          map.getView().setCenter(fromLonLat([lon, lat]));
+          map.getView().setZoom(17);
+    
+          console.log('Marker rendered at:', { lon, lat });
+    
+          // Actualizar el parámetro de esquina si corresponde
+          if (esquina && intersectionNode) {
+            const updatedEsquina = overpassData.elements.find((el) => el.tags?.name && el.id === intersectionNode.id);
+            if (updatedEsquina) {
+              onParamsUpdate && onParamsUpdate({ esquina: updatedEsquina.tags.name });
+              console.log('Updated esquina parameter:', updatedEsquina.tags.name);
+            }
+          }
         }
       } catch (error) {
         console.error('Error fetching marker data:', error.message);
       }
     };
+    
     
   
     if (numero || esquina) {

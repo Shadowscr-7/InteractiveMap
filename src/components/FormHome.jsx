@@ -17,7 +17,7 @@ const FormHome = ({ onParamsChange, params }) => {
   const [calle, setCalle] = useState(null);
   const [numeroPuerta, setNumeroPuerta] = useState(''); // Nuevo estado
   const [calleEsquina, setCalleEsquina] = useState(null); // Nueva calle de esquina
-
+  const [numero, setNumero] = useState('');
   const [departamentos, setDepartamentos] = useState([]);
   const [ciudades, setCiudades] = useState([]);
   const [calles, setCalles] = useState([]);
@@ -155,9 +155,29 @@ const FormHome = ({ onParamsChange, params }) => {
   };
 
   const handleCalleEsquinaChange = (event, newValue) => {
+    console.log('Nuevo valor de calle esquina seleccionado:', newValue);
+  
     setCalleEsquina(newValue);
-    onParamsChange({ departamento, ciudad, calle, numero, esquina: newValue });
+  
+    // Verifica si número es vacío y lo ajusta a ""
+    const updatedNumero = numero || "";
+    console.log('Valor actualizado de numero:', updatedNumero);
+  
+    // Actualiza los parámetros con el valor correcto
+    const updatedParams = {
+      departamento,
+      ciudad,
+      calle,
+      numero: updatedNumero,
+      esquina: newValue.CalleNombre,
+    };
+    
+    console.log('Parámetros actualizados enviados a onParamsChange:', updatedParams);
+  
+    onParamsChange(updatedParams);
   };
+  
+  
 
   return (
     <>
