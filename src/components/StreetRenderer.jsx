@@ -24,6 +24,7 @@ const StreetRenderer = ({ map, params, isMapReady, setLastCoordinates }) => {
     streetSource.current.clear(); // Limpia la fuente de calles
     markerSource.current.clear(); // Limpia la fuente de marcadores
   
+    // Función para obtener datos de una calle completa (sin número ni esquina)
     const fetchStreetData = async () => {
       if (!departamento || !calle || !pais || numero || esquina) {
         console.debug('Skipping street rendering as markers take precedence.');
@@ -32,6 +33,7 @@ const StreetRenderer = ({ map, params, isMapReady, setLastCoordinates }) => {
   
       console.log('Fetching street data for:', { departamento, calle, pais, ciudad });
   
+      // Consulta Overpass para obtener los tramos de una calle específica
       const overpassQuery = `
         [out:json];
         area["name"="${pais}"]["admin_level"="2"]->.countryArea;
@@ -39,6 +41,7 @@ const StreetRenderer = ({ map, params, isMapReady, setLastCoordinates }) => {
         way["name"~"^${calle}$"](area.searchArea);
         out geom;
       `;
+      console.log('Overpass query for street:', overpassQuery);
   
       const overpassUrl = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(overpassQuery)}`;
   
@@ -47,6 +50,8 @@ const StreetRenderer = ({ map, params, isMapReady, setLastCoordinates }) => {
         if (!response.ok) throw new Error(`Overpass API error: ${response.status} ${response.statusText}`);
   
         const data = await response.json();
+        console.log('Overpass street data:', data);
+  
         if (data.elements && data.elements.length > 0) {
           const features = data.elements
             .filter((element) => element.type === 'way' && element.geometry)
@@ -86,30 +91,35 @@ const StreetRenderer = ({ map, params, isMapReady, setLastCoordinates }) => {
       }
     };
   
+    // Función para obtener y marcar un punto en el mapa
     const fetchMarkerData = async () => {
       if (!calle || (!numero && !esquina)) {
         console.debug('Skipping marker rendering: Calle, Numero or Esquina not provided.');
         return;
       }
-    
+  
       console.log('Fetching marker data for:', { calle, numero, esquina });
-    
+  
       try {
         let lon, lat;
-    
+  
         if (numero && !esquina) {
           // Caso: Calle + Número (sin Esquina)
+          console.log('Caso: Calle + Número (sin Esquina)');
           const locationQuery = `${calle} ${numero ? `#${numero}` : ''}, ${ciudad || ''}, ${departamento}, ${pais}`;
           const nominatimUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(locationQuery)}&format=json&addressdetails=1`;
-    
+          console.log('Nominatim URL:', nominatimUrl);
+  
           const response = await fetch(nominatimUrl);
           if (!response.ok) throw new Error(`Nominatim API error: ${response.status} ${response.statusText}`);
-    
+  
           const data = await response.json();
+          console.log('Nominatim data:', data);
+  
           const validResult = data.find((result) =>
             ["node", "place", "house"].includes(result.osm_type)
           );
-    
+  
           if (validResult) {
             lon = parseFloat(validResult.lon);
             lat = parseFloat(validResult.lat);
@@ -119,26 +129,32 @@ const StreetRenderer = ({ map, params, isMapReady, setLastCoordinates }) => {
             return;
           }
         } else {
-          // Caso: Esquina presente
+          // Caso: Calle + Esquina
+          console.log('Caso: Calle + Esquina');
           const overpassQuery = `
             [out:json];
-            way["highway"]["name"="${calle}"];
-            way["highway"]["name"="${esquina}"];
-            node(w)[w];
+            (
+              way["highway"]["name"="${calle}"];
+              way["highway"]["name"="${esquina}"];
+            );
+            node(w)->.nodes;
+            node.nodes["highway"];
             out body;
           `;
-    
+          console.log('Overpass query for intersection:', overpassQuery);
+  
           const response = await fetch('https://overpass-api.de/api/interpreter', {
             method: 'POST',
             body: overpassQuery,
             headers: { 'Content-Type': 'text/plain' },
           });
-    
+  
           if (!response.ok) throw new Error('Overpass API error');
           const overpassData = await response.json();
-    
+          console.log('Overpass data for intersection:', overpassData);
+  
+          // Filtrar nodos relevantes para intersección
           const intersectionNode = overpassData.elements.find((el) => el.type === 'node');
-    
           if (intersectionNode) {
             lon = intersectionNode.lon;
             lat = intersectionNode.lat;
@@ -148,13 +164,13 @@ const StreetRenderer = ({ map, params, isMapReady, setLastCoordinates }) => {
             return;
           }
         }
-    
+  
         if (lon !== undefined && lat !== undefined) {
           // Crear y agregar marcador
           const marker = new Feature({
             geometry: new Point(fromLonLat([lon, lat])),
           });
-    
+  
           marker.setStyle(
             new Style({
               image: new Icon({
@@ -171,30 +187,22 @@ const StreetRenderer = ({ map, params, isMapReady, setLastCoordinates }) => {
               }),
             })
           );
-    
+  
           markerSource.current.addFeature(marker);
-    
-          // Centrar el mapa en el marcador
           map.getView().setCenter(fromLonLat([lon, lat]));
           map.getView().setZoom(17);
-    
+  
           console.log('Marker rendered at:', { lon, lat });
-    
-          // Actualizar el parámetro de esquina si corresponde
-          if (esquina && intersectionNode) {
-            const updatedEsquina = overpassData.elements.find((el) => el.tags?.name && el.id === intersectionNode.id);
-            if (updatedEsquina) {
-              onParamsUpdate && onParamsUpdate({ esquina: updatedEsquina.tags.name });
-              console.log('Updated esquina parameter:', updatedEsquina.tags.name);
-            }
+  
+          if (esquina) {
+            onParamsUpdate && onParamsUpdate({ esquina });
+            console.log('Updated esquina parameter:', esquina);
           }
         }
       } catch (error) {
         console.error('Error fetching marker data:', error.message);
       }
     };
-    
-    
   
     if (numero || esquina) {
       fetchMarkerData();
@@ -202,6 +210,8 @@ const StreetRenderer = ({ map, params, isMapReady, setLastCoordinates }) => {
       fetchStreetData();
     }
   }, [map, isMapReady, departamento, calle, pais, numero, esquina, ciudad]);
+  
+    
   
 
   useEffect(() => {
