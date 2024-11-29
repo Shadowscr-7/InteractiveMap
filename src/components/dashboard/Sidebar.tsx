@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Box,
   Drawer,
@@ -12,13 +12,13 @@ import {
   Collapse,
   Toolbar,
   Tooltip,
-} from '@mui/material';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import AddBoxIcon from '@mui/icons-material/AddBox';
-import PeopleIcon from '@mui/icons-material/People';
-import AssignmentIcon from '@mui/icons-material/Assignment';
-import SettingsApplicationsIcon from '@mui/icons-material/SettingsApplications';
+} from "@mui/material";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import AddBoxIcon from "@mui/icons-material/AddBox";
+import PeopleIcon from "@mui/icons-material/People";
+import AssignmentIcon from "@mui/icons-material/Assignment";
+import SettingsApplicationsIcon from "@mui/icons-material/SettingsApplications";
 
 const drawerWidth = 240;
 
@@ -31,12 +31,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
 
   const menuItems = [
     {
-      title: 'STP1710',
+      title: "STP1710",
       icon: <SettingsApplicationsIcon />, // Icono de gestión
       options: [
-        { label: 'Nuevo Pedido', icon: <AddBoxIcon /> },
-        { label: 'Clientes', icon: <PeopleIcon /> },
-        { label: 'Pedidos', icon: <AssignmentIcon /> },
+        { label: "Nuevo Pedido", icon: <AddBoxIcon /> },
+        { label: "Clientes", icon: <PeopleIcon /> },
+        { label: "Pedidos", icon: <AssignmentIcon /> },
       ],
     },
   ];
@@ -51,19 +51,19 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
       sx={{
         width: isCollapsed ? 80 : drawerWidth,
         flexShrink: 0,
-        '& .MuiDrawer-paper': {
+        "& .MuiDrawer-paper": {
           width: isCollapsed ? 80 : drawerWidth,
-          transition: 'width 0.3s',
+          transition: "width 0.3s",
         },
       }}
     >
       <Toolbar />
-      <Box sx={{ overflow: 'auto' }}>
+      <Box sx={{ overflow: "auto" }}>
         <List>
           {menuItems.map((menu) => (
             <Box key={menu.title}>
               <Tooltip
-                title={isCollapsed ? menu.title : ''}
+                title={isCollapsed ? menu.title : ""}
                 placement="right"
                 arrow
               >
@@ -80,7 +80,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
                 {menu.options.map((option) => (
                   <Tooltip
                     key={option.label}
-                    title={isCollapsed ? option.label : ''}
+                    title={isCollapsed ? option.label : ""}
                     placement="right"
                     arrow
                   >

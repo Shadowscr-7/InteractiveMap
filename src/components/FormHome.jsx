@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Grid,
@@ -8,16 +8,16 @@ import {
   Autocomplete,
   TextField,
   CircularProgress,
-} from '@mui/material';
-import { getDepartamentos, getCiudades, getCalles } from '../services/services';
+} from "@mui/material";
+import { getDepartamentos, getCiudades, getCalles } from "../services/services";
 
 const FormHome = ({ onParamsChange, params }) => {
   const [departamento, setDepartamento] = useState(null);
   const [ciudad, setCiudad] = useState(null);
   const [calle, setCalle] = useState(null);
-  const [numeroPuerta, setNumeroPuerta] = useState(''); // Nuevo estado
+  const [numeroPuerta, setNumeroPuerta] = useState(""); // Nuevo estado
   const [calleEsquina, setCalleEsquina] = useState(null); // Nueva calle de esquina
-  const [numero, setNumero] = useState('');
+  const [numero, setNumero] = useState("");
   const [departamentos, setDepartamentos] = useState([]);
   const [ciudades, setCiudades] = useState([]);
   const [calles, setCalles] = useState([]);
@@ -29,25 +29,25 @@ const FormHome = ({ onParamsChange, params }) => {
   useEffect(() => {
     if (params) {
       console.log("Params recibidos:", params);
-  
+
       const departamentoEncontrado = departamentos.find(
-        (dep) => dep.DepartamentoNombre === params.departamento
+        (dep) => dep.DepartamentoNombre === params.departamento,
       );
       console.log("Departamento encontrado:", departamentoEncontrado);
-  
+
       const ciudadEncontrada = ciudades.find(
-        (ciu) => ciu.CiudadNombre === params.ciudad
+        (ciu) => ciu.CiudadNombre === params.ciudad,
       );
       console.log("Ciudad encontrada:", ciudadEncontrada);
-  
+
       const calleEncontrada = calles.find(
-        (cal) => cal.CalleNombre === params.calle
+        (cal) => cal.CalleNombre === params.calle,
       );
       console.log("Calle encontrada:", calleEncontrada);
 
       // Buscar y establecer la calle esquina
       const esquinaEncontrada = calles.find(
-        (cal) => cal.CalleNombre === params.esquina
+        (cal) => cal.CalleNombre === params.esquina,
       );
       console.log("Calle esquina encontrada:", esquinaEncontrada);
 
@@ -55,15 +55,13 @@ const FormHome = ({ onParamsChange, params }) => {
       setCiudad(ciudadEncontrada || null);
       setCalle(calleEncontrada || null);
       setCalleEsquina(esquinaEncontrada || null);
-  
+
       // Manejo de múltiples números de puerta
-      const numerosPuerta = params.numero ? params.numero.split(',') : [""]; // Divide los números o asigna un array con cadena vacía
-      setNumeroPuerta(numerosPuerta[0] || ''); // Toma el primer número o asigna una cadena vacía
+      const numerosPuerta = params.numero ? params.numero.split(",") : [""]; // Divide los números o asigna un array con cadena vacía
+      setNumeroPuerta(numerosPuerta[0] || ""); // Toma el primer número o asigna una cadena vacía
       console.log("Número de puerta procesado:", numerosPuerta[0]);
     }
   }, [params, departamentos, ciudades, calles]);
-  
-  
 
   // Obtener departamentos al cargar
   useEffect(() => {
@@ -72,7 +70,7 @@ const FormHome = ({ onParamsChange, params }) => {
         const departamentos = await getDepartamentos();
         setDepartamentos(departamentos);
       } catch (error) {
-        console.error('Error al obtener departamentos:', error);
+        console.error("Error al obtener departamentos:", error);
       }
     };
 
@@ -88,7 +86,7 @@ const FormHome = ({ onParamsChange, params }) => {
           const ciudades = await getCiudades(departamento.DepartamentoId);
           setCiudades(ciudades || []);
         } catch (error) {
-          console.error('Error al obtener ciudades:', error);
+          console.error("Error al obtener ciudades:", error);
         } finally {
           setLoadingCiudades(false);
         }
@@ -112,12 +110,12 @@ const FormHome = ({ onParamsChange, params }) => {
           const calles = await getCalles(departamento.DepartamentoId, ciudadId);
           setCalles(calles || []);
         } catch (error) {
-          console.error('Error al obtener calles:', error);
+          console.error("Error al obtener calles:", error);
         } finally {
           setLoadingCalles(false);
         }
       };
-  
+
       fetchCalles();
     } else {
       setCalles([]);
@@ -125,7 +123,6 @@ const FormHome = ({ onParamsChange, params }) => {
       setCalleEsquina(null);
     }
   }, [departamento, ciudad]);
-  
 
   // Manejo de eventos de cambio
   const handleDepartamentoChange = (event, newValue) => {
@@ -133,36 +130,51 @@ const FormHome = ({ onParamsChange, params }) => {
     setCiudad(null);
     setCalle(null);
     setCalleEsquina(null);
-    onParamsChange({ departamento: newValue, ciudad: null, calle: null, esquina: null });
+    onParamsChange({
+      departamento: newValue,
+      ciudad: null,
+      calle: null,
+      esquina: null,
+    });
   };
 
   const handleCiudadChange = (event, newValue) => {
     setCiudad(newValue);
     setCalle(null);
     setCalleEsquina(null);
-    onParamsChange({ departamento, ciudad: newValue, calle: null, esquina: null });
+    onParamsChange({
+      departamento,
+      ciudad: newValue,
+      calle: null,
+      esquina: null,
+    });
   };
 
   const handleCalleChange = (event, newValue) => {
     setCalle(newValue);
-    onParamsChange({ departamento, ciudad, calle: newValue, esquina: calleEsquina });
+    onParamsChange({
+      departamento,
+      ciudad,
+      calle: newValue,
+      esquina: calleEsquina,
+    });
   };
 
   const handleNumeroPuertaChange = (event) => {
-    const value = event.target.value.replace(/\D/g, ''); // Permitir solo números
+    const value = event.target.value.replace(/\D/g, ""); // Permitir solo números
     setNumeroPuerta(value);
     onParamsChange({ departamento, ciudad, calle, numero: value });
   };
 
   const handleCalleEsquinaChange = (event, newValue) => {
-    console.log('Nuevo valor de calle esquina seleccionado:', newValue);
-  
+    console.log("Nuevo valor de calle esquina seleccionado:", newValue);
+
     setCalleEsquina(newValue);
-  
+
     // Verifica si número es vacío y lo ajusta a ""
     const updatedNumero = numero || "";
-    console.log('Valor actualizado de numero:', updatedNumero);
-  
+    console.log("Valor actualizado de numero:", updatedNumero);
+
     // Actualiza los parámetros con el valor correcto
     const updatedParams = {
       departamento,
@@ -171,235 +183,239 @@ const FormHome = ({ onParamsChange, params }) => {
       numero: updatedNumero,
       esquina: newValue.CalleNombre,
     };
-    
-    console.log('Parámetros actualizados enviados a onParamsChange:', updatedParams);
-  
+
+    console.log(
+      "Parámetros actualizados enviados a onParamsChange:",
+      updatedParams,
+    );
+
     onParamsChange(updatedParams);
   };
-  
-  
 
   return (
     <>
       <Grid container spacing={3}>
-  {/* Columna Izquierda */}
-  <Grid item xs={12} sm={6}>
-  {/* Combo Departamento */}
-  <Autocomplete
-    options={departamentos}
-    getOptionLabel={(option) => option.DepartamentoNombre}
-    value={departamento}
-    onChange={handleDepartamentoChange}
-    renderInput={(params) => (
-      <TextField
-        {...params}
-        label="Departamento"
-        variant="outlined"
-        fullWidth
-        sx={{
-          "& .MuiOutlinedInput-root": {
-            color: "#ffffff", // Texto blanco
-            "& fieldset": {
-              borderColor: "#ffffff", // Bordes blancos
-            },
-            "&:hover fieldset": {
-              borderColor: "#ffffff", // Bordes al pasar el mouse
-            },
-            "&.Mui-focused fieldset": {
-              borderColor: "#ffffff", // Bordes al enfocar
-            },
-          },
-          "& .MuiInputLabel-root": {
-            color: "#ffffff", // Label blanco
-          },
-          "& .MuiInputLabel-root.Mui-focused": {
-            color: "#ffffff", // Label blanco al enfocar
-          },
-        }}
-      />
-    )}
-  />
-</Grid>
+        {/* Columna Izquierda */}
+        <Grid item xs={12} sm={6}>
+          {/* Combo Departamento */}
+          <Autocomplete
+            options={departamentos}
+            getOptionLabel={(option) => option.DepartamentoNombre}
+            value={departamento}
+            onChange={handleDepartamentoChange}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Departamento"
+                variant="outlined"
+                fullWidth
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    color: "#ffffff", // Texto blanco
+                    "& fieldset": {
+                      borderColor: "#ffffff", // Bordes blancos
+                    },
+                    "&:hover fieldset": {
+                      borderColor: "#ffffff", // Bordes al pasar el mouse
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: "#ffffff", // Bordes al enfocar
+                    },
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: "#ffffff", // Label blanco
+                  },
+                  "& .MuiInputLabel-root.Mui-focused": {
+                    color: "#ffffff", // Label blanco al enfocar
+                  },
+                }}
+              />
+            )}
+          />
+        </Grid>
 
-<Grid item xs={12} sm={6}>
-  {/* Combo Ciudad */}
-  <Autocomplete
-    options={ciudades}
-    getOptionLabel={(option) => option.CiudadNombre}
-    value={ciudad}
-    onChange={handleCiudadChange}
-    loading={loadingCiudades}
-    renderInput={(params) => (
-      <TextField
-        {...params}
-        label="Ciudad"
-        variant="outlined"
-        fullWidth
-        sx={{
-          "& .MuiOutlinedInput-root": {
-            color: "#ffffff", // Texto blanco
-            "& fieldset": {
-              borderColor: "#ffffff", // Bordes blancos
-            },
-            "&:hover fieldset": {
-              borderColor: "#ffffff", // Bordes al pasar el mouse
-            },
-            "&.Mui-focused fieldset": {
-              borderColor: "#ffffff", // Bordes al enfocar
-            },
-          },
-          "& .MuiInputLabel-root": {
-            color: "#ffffff", // Label blanco
-          },
-          "& .MuiInputLabel-root.Mui-focused": {
-            color: "#ffffff", // Label blanco al enfocar
-          },
-        }}
-        InputProps={{
-          ...params.InputProps,
-          endAdornment: (
-            <>
-              {loadingCiudades ? <CircularProgress color="inherit" size={20} /> : null}
-              {params.InputProps.endAdornment}
-            </>
-          ),
-        }}
-      />
-    )}
-  />
-</Grid>
+        <Grid item xs={12} sm={6}>
+          {/* Combo Ciudad */}
+          <Autocomplete
+            options={ciudades}
+            getOptionLabel={(option) => option.CiudadNombre}
+            value={ciudad}
+            onChange={handleCiudadChange}
+            loading={loadingCiudades}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Ciudad"
+                variant="outlined"
+                fullWidth
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    color: "#ffffff", // Texto blanco
+                    "& fieldset": {
+                      borderColor: "#ffffff", // Bordes blancos
+                    },
+                    "&:hover fieldset": {
+                      borderColor: "#ffffff", // Bordes al pasar el mouse
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: "#ffffff", // Bordes al enfocar
+                    },
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: "#ffffff", // Label blanco
+                  },
+                  "& .MuiInputLabel-root.Mui-focused": {
+                    color: "#ffffff", // Label blanco al enfocar
+                  },
+                }}
+                InputProps={{
+                  ...params.InputProps,
+                  endAdornment: (
+                    <>
+                      {loadingCiudades ? (
+                        <CircularProgress color="inherit" size={20} />
+                      ) : null}
+                      {params.InputProps.endAdornment}
+                    </>
+                  ),
+                }}
+              />
+            )}
+          />
+        </Grid>
 
-<Grid item xs={12} sm={6}>
-  {/* Combo Calle */}
-  <Autocomplete
-    options={calles}
-    getOptionLabel={(option) => option.CalleNombre}
-    value={calle}
-    onChange={handleCalleChange}
-    loading={loadingCalles}
-    renderInput={(params) => (
-      <TextField
-        {...params}
-        label="Calle Principal"
-        variant="outlined"
-        fullWidth
-        sx={{
-          "& .MuiOutlinedInput-root": {
-            color: "#ffffff", // Texto blanco
-            "& fieldset": {
-              borderColor: "#ffffff", // Bordes blancos
-            },
-            "&:hover fieldset": {
-              borderColor: "#ffffff", // Bordes al pasar el mouse
-            },
-            "&.Mui-focused fieldset": {
-              borderColor: "#ffffff", // Bordes al enfocar
-            },
-          },
-          "& .MuiInputLabel-root": {
-            color: "#ffffff", // Label blanco
-          },
-          "& .MuiInputLabel-root.Mui-focused": {
-            color: "#ffffff", // Label blanco al enfocar
-          },
-        }}
-        InputProps={{
-          ...params.InputProps,
-          endAdornment: (
-            <>
-              {loadingCalles ? <CircularProgress color="inherit" size={20} /> : null}
-              {params.InputProps.endAdornment}
-            </>
-          ),
-        }}
-      />
-    )}
-  />
-</Grid>
+        <Grid item xs={12} sm={6}>
+          {/* Combo Calle */}
+          <Autocomplete
+            options={calles}
+            getOptionLabel={(option) => option.CalleNombre}
+            value={calle}
+            onChange={handleCalleChange}
+            loading={loadingCalles}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Calle Principal"
+                variant="outlined"
+                fullWidth
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    color: "#ffffff", // Texto blanco
+                    "& fieldset": {
+                      borderColor: "#ffffff", // Bordes blancos
+                    },
+                    "&:hover fieldset": {
+                      borderColor: "#ffffff", // Bordes al pasar el mouse
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: "#ffffff", // Bordes al enfocar
+                    },
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: "#ffffff", // Label blanco
+                  },
+                  "& .MuiInputLabel-root.Mui-focused": {
+                    color: "#ffffff", // Label blanco al enfocar
+                  },
+                }}
+                InputProps={{
+                  ...params.InputProps,
+                  endAdornment: (
+                    <>
+                      {loadingCalles ? (
+                        <CircularProgress color="inherit" size={20} />
+                      ) : null}
+                      {params.InputProps.endAdornment}
+                    </>
+                  ),
+                }}
+              />
+            )}
+          />
+        </Grid>
 
-
-  {/* Número de Puerta */}
-  <Grid item xs={12} sm={6}>
-  <TextField
-    label="Número de Puerta"
-    variant="outlined"
-    value={numeroPuerta}
-    onChange={handleNumeroPuertaChange}
-    inputProps={{ maxLength: 6 }} // Limitar a 6 dígitos
-    fullWidth
-    sx={{
-      "& .MuiOutlinedInput-root": {
-        color: "#ffffff", // Color del texto
-        "& fieldset": {
-          borderColor: "#ffffff", // Color de los bordes
-        },
-        "&:hover fieldset": {
-          borderColor: "#ffffff", // Color de los bordes al pasar el mouse
-        },
-        "&.Mui-focused fieldset": {
-          borderColor: "#ffffff", // Color de los bordes cuando el campo está enfocado
-        },
-      },
-      "& .MuiInputLabel-root": {
-        color: "#ffffff", // Color del label
-      },
-      "& .MuiInputLabel-root.Mui-focused": {
-        color: "#ffffff", // Color del label cuando está enfocado
-      },
-    }}
-  />
-</Grid>
-
-
-  {/* Combo Calle Esquina */}
-  <Grid item xs={12} sm={6}>
-    <Autocomplete
-      options={calles}
-      getOptionLabel={(option) => option.CalleNombre}
-      value={calleEsquina}
-      onChange={handleCalleEsquinaChange}
-      loading={loadingCalles}
-      renderInput={(params) => (
-        <TextField
-          {...params}
-          label="Calle Esquina"
-          variant="outlined"
-          fullWidth
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              color: "#ffffff", // Texto blanco
-              "& fieldset": {
-                borderColor: "#ffffff", // Bordes blancos
+        {/* Número de Puerta */}
+        <Grid item xs={12} sm={6}>
+          <TextField
+            label="Número de Puerta"
+            variant="outlined"
+            value={numeroPuerta}
+            onChange={handleNumeroPuertaChange}
+            inputProps={{ maxLength: 6 }} // Limitar a 6 dígitos
+            fullWidth
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                color: "#ffffff", // Color del texto
+                "& fieldset": {
+                  borderColor: "#ffffff", // Color de los bordes
+                },
+                "&:hover fieldset": {
+                  borderColor: "#ffffff", // Color de los bordes al pasar el mouse
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: "#ffffff", // Color de los bordes cuando el campo está enfocado
+                },
               },
-              "&:hover fieldset": {
-                borderColor: "#ffffff", // Bordes al pasar el mouse
+              "& .MuiInputLabel-root": {
+                color: "#ffffff", // Color del label
               },
-              "&.Mui-focused fieldset": {
-                borderColor: "#ffffff", // Bordes al enfocar
+              "& .MuiInputLabel-root.Mui-focused": {
+                color: "#ffffff", // Color del label cuando está enfocado
               },
-            },
-            "& .MuiInputLabel-root": {
-              color: "#ffffff", // Label blanco
-            },
-            "& .MuiInputLabel-root.Mui-focused": {
-              color: "#ffffff", // Label blanco al enfocar
-            },
-          }}
-          InputProps={{
-            ...params.InputProps,
-            endAdornment: (
-              <>
-                {loadingCalles ? <CircularProgress color="inherit" size={20} /> : null}
-                {params.InputProps.endAdornment}
-              </>
-            ),
-          }}
-        />
-      )}
-    />
-  </Grid>
-</Grid>
+            }}
+          />
+        </Grid>
 
+        {/* Combo Calle Esquina */}
+        <Grid item xs={12} sm={6}>
+          <Autocomplete
+            options={calles}
+            getOptionLabel={(option) => option.CalleNombre}
+            value={calleEsquina}
+            onChange={handleCalleEsquinaChange}
+            loading={loadingCalles}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Calle Esquina"
+                variant="outlined"
+                fullWidth
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    color: "#ffffff", // Texto blanco
+                    "& fieldset": {
+                      borderColor: "#ffffff", // Bordes blancos
+                    },
+                    "&:hover fieldset": {
+                      borderColor: "#ffffff", // Bordes al pasar el mouse
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: "#ffffff", // Bordes al enfocar
+                    },
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: "#ffffff", // Label blanco
+                  },
+                  "& .MuiInputLabel-root.Mui-focused": {
+                    color: "#ffffff", // Label blanco al enfocar
+                  },
+                }}
+                InputProps={{
+                  ...params.InputProps,
+                  endAdornment: (
+                    <>
+                      {loadingCalles ? (
+                        <CircularProgress color="inherit" size={20} />
+                      ) : null}
+                      {params.InputProps.endAdornment}
+                    </>
+                  ),
+                }}
+              />
+            )}
+          />
+        </Grid>
+      </Grid>
     </>
   );
 };

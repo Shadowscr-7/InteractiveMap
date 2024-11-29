@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useRouter } from 'next/navigation';
+import React from "react";
+import { useRouter } from "next/navigation";
 import {
   Box,
   Button,
@@ -9,26 +9,56 @@ import {
   TextField,
   InputAdornment,
   IconButton,
-} from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import SearchIcon from '@mui/icons-material/Search';
-import FilterListIcon from '@mui/icons-material/FilterList';
-import Table from '../../../components/table/Table';
+} from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import SearchIcon from "@mui/icons-material/Search";
+import FilterListIcon from "@mui/icons-material/FilterList";
+import Table from "../../../components/table/Table";
 
 const Clientes = () => {
   const router = useRouter();
 
-  const headers = ['ID', 'Nombre', 'Correo', 'Teléfono', 'País'];
+  const headers = ["ID", "Nombre", "Correo", "Teléfono", "País"];
   const data = [
-    { ID: 1, Nombre: 'Juan Pérez', Correo: 'juan.perez@example.com', Teléfono: '+1 555-0101', País: 'México' },
-    { ID: 2, Nombre: 'María Gómez', Correo: 'maria.gomez@example.com', Teléfono: '+1 555-0102', País: 'Colombia' },
-    { ID: 3, Nombre: 'Carlos Ruiz', Correo: 'carlos.ruiz@example.com', Teléfono: '+1 555-0103', País: 'Argentina' },
-    { ID: 4, Nombre: 'Ana Fernández', Correo: 'ana.fernandez@example.com', Teléfono: '+1 555-0104', País: 'Chile' },
-    { ID: 5, Nombre: 'Lucía Martínez', Correo: 'lucia.martinez@example.com', Teléfono: '+1 555-0105', País: 'Perú' },
+    {
+      ID: 1,
+      Nombre: "Juan Pérez",
+      Correo: "juan.perez@example.com",
+      Teléfono: "+1 555-0101",
+      País: "México",
+    },
+    {
+      ID: 2,
+      Nombre: "María Gómez",
+      Correo: "maria.gomez@example.com",
+      Teléfono: "+1 555-0102",
+      País: "Colombia",
+    },
+    {
+      ID: 3,
+      Nombre: "Carlos Ruiz",
+      Correo: "carlos.ruiz@example.com",
+      Teléfono: "+1 555-0103",
+      País: "Argentina",
+    },
+    {
+      ID: 4,
+      Nombre: "Ana Fernández",
+      Correo: "ana.fernandez@example.com",
+      Teléfono: "+1 555-0104",
+      País: "Chile",
+    },
+    {
+      ID: 5,
+      Nombre: "Lucía Martínez",
+      Correo: "lucia.martinez@example.com",
+      Teléfono: "+1 555-0105",
+      País: "Perú",
+    },
   ];
 
   const handleAddClient = () => {
-    router.push('/stp1710/clientes/add'); // Redirección a la página para agregar cliente
+    router.push("/stp1710/clientes/add"); // Redirección a la página para agregar cliente
   };
 
   return (
@@ -41,9 +71,9 @@ const Clientes = () => {
       </Typography>
       <Box
         sx={{
-          display: 'flex',
-          justifyContent: 'flex-end',
-          alignItems: 'center',
+          display: "flex",
+          justifyContent: "flex-end",
+          alignItems: "center",
           marginBottom: 2,
           gap: 2,
         }}

@@ -60,9 +60,9 @@ const WebSocketClient = () => {
 
 export default WebSocketClient;
 */
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 const WebSocketClient = () => {
   const [messages, setMessages] = useState([]);
@@ -70,41 +70,41 @@ const WebSocketClient = () => {
   const [sessionId, setSessionId] = useState(null); // Para almacenar el sessionId recibido del servidor
 
   useEffect(() => {
-    const ws = new WebSocket('ws://localhost:8080'); // Conexión al servidor WebSocket
+    const ws = new WebSocket("ws://localhost:8080"); // Conexión al servidor WebSocket
 
     ws.onopen = () => {
-      console.log('Conexión establecida con el WebSocket');
-      
+      console.log("Conexión establecida con el WebSocket");
+
       // Envía un mensaje inicial indicando que este cliente es un "map"
-      const initialMessage = JSON.stringify({ clientType: 'map' });
+      const initialMessage = JSON.stringify({ clientType: "map" });
       ws.send(initialMessage);
-      console.log('Mensaje inicial enviado:', initialMessage);
+      console.log("Mensaje inicial enviado:", initialMessage);
     };
 
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        console.log('Mensaje recibido del servidor:', data);
+        console.log("Mensaje recibido del servidor:", data);
 
         // Almacena el sessionId si el mensaje lo contiene
         if (data.sessionId) {
           setSessionId(data.sessionId);
-          console.log('Session ID recibido:', data.sessionId);
+          console.log("Session ID recibido:", data.sessionId);
         }
 
         setMessages((prev) => [...prev, JSON.stringify(data)]);
       } catch (error) {
-        console.error('Error al procesar el mensaje recibido:', error);
+        console.error("Error al procesar el mensaje recibido:", error);
         setMessages((prev) => [...prev, event.data]); // Guarda el mensaje sin procesar
       }
     };
 
     ws.onerror = (error) => {
-      console.error('Error en el WebSocket:', error);
+      console.error("Error en el WebSocket:", error);
     };
 
     ws.onclose = () => {
-      console.log('Conexión WebSocket cerrada');
+      console.log("Conexión WebSocket cerrada");
     };
 
     setSocket(ws);
@@ -118,14 +118,14 @@ const WebSocketClient = () => {
   const sendMessage = () => {
     if (socket && socket.readyState === WebSocket.OPEN) {
       const message = JSON.stringify({
-        clientType: 'map',
-        content: 'Mensaje desde React',
+        clientType: "map",
+        content: "Mensaje desde React",
         sessionId, // Incluye el sessionId si está disponible
       });
       socket.send(message);
-      console.log('Mensaje enviado:', message);
+      console.log("Mensaje enviado:", message);
     } else {
-      console.warn('El WebSocket no está conectado');
+      console.warn("El WebSocket no está conectado");
     }
   };
 
@@ -138,7 +138,11 @@ const WebSocketClient = () => {
           <li key={index}>{msg}</li>
         ))}
       </ul>
-      {sessionId && <p><strong>Session ID:</strong> {sessionId}</p>}
+      {sessionId && (
+        <p>
+          <strong>Session ID:</strong> {sessionId}
+        </p>
+      )}
     </div>
   );
 };

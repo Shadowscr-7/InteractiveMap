@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import 'ol/ol.css';
-import { useEffect, useRef, useState } from 'react';
-import { Map, View } from 'ol';
-import TileLayer from 'ol/layer/Tile';
-import OSM from 'ol/source/OSM';
-import { fromLonLat } from 'ol/proj';
-import { Feature } from 'ol';
-import { Point } from 'ol/geom';
-import VectorLayer from 'ol/layer/Vector';
-import VectorSource from 'ol/source/Vector';
-import Style from 'ol/style/Style';
-import Icon from 'ol/style/Icon';
+import "ol/ol.css";
+import { useEffect, useRef, useState } from "react";
+import { Map, View } from "ol";
+import TileLayer from "ol/layer/Tile";
+import OSM from "ol/source/OSM";
+import { fromLonLat } from "ol/proj";
+import { Feature } from "ol";
+import { Point } from "ol/geom";
+import VectorLayer from "ol/layer/Vector";
+import VectorSource from "ol/source/Vector";
+import Style from "ol/style/Style";
+import Icon from "ol/style/Icon";
 
 const GeolocateUsers = ({ personas }) => {
   const mapRef = useRef(null);
@@ -23,7 +23,7 @@ const GeolocateUsers = ({ personas }) => {
   useEffect(() => {
     if (!mapRef.current) {
       const initialMap = new Map({
-        target: 'map',
+        target: "map",
         layers: [
           new TileLayer({
             source: new OSM(),
@@ -41,12 +41,15 @@ const GeolocateUsers = ({ personas }) => {
       initialMap.addLayer(markerLayer);
 
       // Añadir evento de pointermove para manejar los tooltips
-      initialMap.on('pointermove', (event) => {
-        mapRef.current.getTargetElement().style.cursor = ''; // Resetear el cursor por defecto
+      initialMap.on("pointermove", (event) => {
+        mapRef.current.getTargetElement().style.cursor = ""; // Resetear el cursor por defecto
 
-        const feature = mapRef.current.forEachFeatureAtPixel(event.pixel, (feature) => feature);
+        const feature = mapRef.current.forEachFeatureAtPixel(
+          event.pixel,
+          (feature) => feature,
+        );
         if (feature) {
-          const personaData = feature.get('data'); // Obtener datos de la persona
+          const personaData = feature.get("data"); // Obtener datos de la persona
           setHoveredPersona(personaData);
 
           // Posicionar el cuadro justo encima del marcador
@@ -55,11 +58,14 @@ const GeolocateUsers = ({ personas }) => {
             y: event.pixel[1] - 15, // Ajuste vertical
           });
 
-          console.log('Feature encontrada bajo el puntero:', personaData);
+          console.log("Feature encontrada bajo el puntero:", personaData);
 
-          mapRef.current.getTargetElement().style.cursor = 'pointer'; // Cambiar cursor
+          mapRef.current.getTargetElement().style.cursor = "pointer"; // Cambiar cursor
         } else {
-          console.log('No hay feature bajo el puntero en posición:', event.pixel);
+          console.log(
+            "No hay feature bajo el puntero en posición:",
+            event.pixel,
+          );
           setHoveredPersona(null); // Limpiar tooltip si no hay feature
         }
       });
@@ -72,21 +78,23 @@ const GeolocateUsers = ({ personas }) => {
   useEffect(() => {
     markerSource.current.clear();
 
-    console.log('Datos recibidos en GeolocateUsers:', personas);
+    console.log("Datos recibidos en GeolocateUsers:", personas);
 
     if (!personas || personas.length === 0) {
-      console.warn('El array de personas está vacío o no está definido.');
+      console.warn("El array de personas está vacío o no está definido.");
       return;
     }
 
     personas.forEach((persona, index) => {
       const { MovId, latitude, longitude } = persona;
-      console.log('Procesando persona:', persona);
+      console.log("Procesando persona:", persona);
 
       // Validar coordenadas
       if (
-        latitude < -90 || latitude > 90 ||
-        longitude < -180 || longitude > 180
+        latitude < -90 ||
+        latitude > 90 ||
+        longitude < -180 ||
+        longitude > 180
       ) {
         console.warn(`Coordenadas inválidas para MovId: ${MovId}`);
         return;
@@ -96,41 +104,46 @@ const GeolocateUsers = ({ personas }) => {
       const offset = 0.0001 * (index % 2 === 0 ? 1 : -1);
 
       const marker = new Feature({
-        geometry: new Point(fromLonLat([longitude + offset, latitude + offset])),
+        geometry: new Point(
+          fromLonLat([longitude + offset, latitude + offset]),
+        ),
       });
 
       marker.setStyle(
         new Style({
           image: new Icon({
-            src: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png',
+            src: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
             scale: 1.5, // Incrementar escala para mejor visibilidad
           }),
-        })
+        }),
       );
 
-      marker.set('data', { MovId, latitude, longitude });
+      marker.set("data", { MovId, latitude, longitude });
       markerSource.current.addFeature(marker);
-      console.log('Marcador añadido para MovId:', MovId);
+      console.log("Marcador añadido para MovId:", MovId);
     });
 
-    console.log('Número de marcadores en la fuente:', markerSource.current.getFeatures().length);
+    console.log(
+      "Número de marcadores en la fuente:",
+      markerSource.current.getFeatures().length,
+    );
   }, [personas]);
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '500px' }}>
-      <div id="map" style={{ width: '100%', height: '100%' }} />
+    <div style={{ position: "relative", width: "100%", height: "500px" }}>
+      <div id="map" style={{ width: "100%", height: "100%" }} />
 
       {hoveredPersona && (
         <div
           style={{
-            position: 'absolute',
+            position: "absolute",
             top: `${tooltipPosition.y}px`,
             left: `${tooltipPosition.x}px`,
-            backgroundColor: 'white',
-            padding: '5px',
-            border: '1px solid black',
-            borderRadius: '5px',
-            pointerEvents: 'none',
+            backgroundColor: "white",
+            padding: "5px",
+            border: "1px solid black",
+            borderRadius: "5px",
+            pointerEvents: "none",
           }}
         >
           <h4>Información de Persona</h4>

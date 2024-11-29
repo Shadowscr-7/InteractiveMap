@@ -1,18 +1,18 @@
-import axios from 'axios';
+import axios from "axios";
 
 // URL base del proxy
-const BASE_URL = '/api'; // Ahora apunta al proxy configurado en next.config.js
+const BASE_URL = "/api"; // Ahora apunta al proxy configurado en next.config.js
 
 // Obtener el token JWT del almacenamiento local
 const getToken = () => {
-  return localStorage.getItem('jwtToken');
+  return localStorage.getItem("jwtToken");
 };
 
 // Configurar la instancia de Axios
 const http = axios.create({
   baseURL: BASE_URL,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
@@ -21,13 +21,13 @@ http.interceptors.request.use(
   (config) => {
     const token = getToken();
     if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
+      config.headers["Authorization"] = `Bearer ${token}`;
     }
     return config;
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 // Interceptor de respuesta para manejar errores
@@ -39,7 +39,7 @@ http.interceptors.response.use(
       // window.location.href = '/login';
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default http;

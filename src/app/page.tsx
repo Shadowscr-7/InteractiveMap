@@ -1,61 +1,70 @@
-'use client';
+"use client";
 
-import { useRouter, useSearchParams } from 'next/navigation';
-import OpenLayersMap from '../components/OpenLayersMap';
-import WebSocketClient from '../components/WebSocketClient';
-import { useEffect, useState, useRef } from 'react';
+import { useRouter, useSearchParams } from "next/navigation";
+import OpenLayersMap from "../components/OpenLayersMap";
+import WebSocketClient from "../components/WebSocketClient";
+import { useEffect, useState, useRef } from "react";
 
 const Page = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   // Obtener los parámetros de la URL
-  const pais = searchParams.get('pais') || '';
-  const departamento = searchParams.get('departamento') || '';
-  const ciudad = searchParams.get('ciudad') || '';
-  const calle = searchParams.get('calle') || '';
-  const numero = searchParams.get('numero') || '';
+  const pais = searchParams.get("pais") || "";
+  const departamento = searchParams.get("departamento") || "";
+  const ciudad = searchParams.get("ciudad") || "";
+  const calle = searchParams.get("calle") || "";
+  const numero = searchParams.get("numero") || "";
 
-  const [location, setLocation] = useState({ pais, departamento, ciudad, calle, numero });
+  const [location, setLocation] = useState({
+    pais,
+    departamento,
+    ciudad,
+    calle,
+    numero,
+  });
   const sessionIdRef = useRef<string | null>(null); // Referencia para almacenar el sessionId
   const socketRef = useRef<WebSocket | null>(null); // Referencia para el WebSocket
 
   // Conexión al WebSocket
   useEffect(() => {
-    const ws = new WebSocket('ws://localhost:8080'); // Cambiar a tu URL de WebSocket
+    const ws = new WebSocket("ws://localhost:8080"); // Cambiar a tu URL de WebSocket
 
     ws.onopen = () => {
-      console.log('WebSocket conectado');
+      console.log("WebSocket conectado");
 
       // Enviar un mensaje inicial para identificar el tipo de cliente
       const initialMessage = {
-        clientType: 'map',
+        clientType: "map",
       };
       ws.send(JSON.stringify(initialMessage));
-      console.log('Mensaje inicial enviado:', initialMessage);
+      console.log("Mensaje inicial enviado:", initialMessage);
     };
 
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        console.log('Mensaje recibido del servidor:', data);
+        console.log("Mensaje recibido del servidor:", data);
 
         // Si el mensaje contiene un sessionId, almacenarlo en la referencia
         if (data.sessionId) {
           sessionIdRef.current = data.sessionId;
-          console.log('Session ID almacenado en la referencia:', sessionIdRef.current);
+          console.log(
+            "Session ID almacenado en la referencia:",
+            sessionIdRef.current,
+          );
         }
       } catch (error) {
-        console.error('Error procesando mensaje del servidor:', error);
+        console.error("Error procesando mensaje del servidor:", error);
       }
     };
 
     ws.onerror = (error) => {
-      console.error('Error en el WebSocket:', error);
+      console.error("Error en el WebSocket:", error);
     };
 
     ws.onclose = () => {
-      console.log('WebSocket desconectado');
+      console.log("WebSocket desconectado");
     };
 
     socketRef.current = ws; // Asignar el WebSocket a la referencia
@@ -70,7 +79,9 @@ const Page = () => {
     const sessionId = sessionIdRef.current; // Obtener el sessionId de la referencia
 
     if (!sessionId) {
-      console.warn('El sessionId no está disponible, no se puede enviar el mensaje');
+      console.warn(
+        "El sessionId no está disponible, no se puede enviar el mensaje",
+      );
       return;
     }
 
@@ -79,26 +90,29 @@ const Page = () => {
         const payload = {
           ...data,
           sessionId, // Incluir el sessionId en el mensaje
-          clientType: 'map', // Incluir el tipo de cliente
+          clientType: "map", // Incluir el tipo de cliente
         };
         socketRef.current.send(JSON.stringify(payload));
-        console.log('Mensaje enviado al WebSocket:', payload);
+        console.log("Mensaje enviado al WebSocket:", payload);
       } catch (error) {
-        console.error('Error al enviar mensaje al WebSocket:', error);
+        console.error("Error al enviar mensaje al WebSocket:", error);
       }
     } else {
-      console.warn('El WebSocket no está conectado');
+      console.warn("El WebSocket no está conectado");
     }
   };
 
   // Función para manejar la actualización de ubicación desde el componente de mapa
-  const handleLocationChange = (newLocation: Record<string, string>, coordinates: [number, number]) => {
+  const handleLocationChange = (
+    newLocation: Record<string, string>,
+    coordinates: [number, number],
+  ) => {
     const updatedLocation = {
-      pais: newLocation.pais || 'Uruguay',
-      departamento: newLocation.departamento || 'Montevideo',
-      ciudad: newLocation.ciudad || 'Ciudad Vieja',
-      calle: newLocation.calle || '18 de Julio',
-      numero: newLocation.numero || '1234',
+      pais: newLocation.pais || "Uruguay",
+      departamento: newLocation.departamento || "Montevideo",
+      ciudad: newLocation.ciudad || "Ciudad Vieja",
+      calle: newLocation.calle || "18 de Julio",
+      numero: newLocation.numero || "1234",
     };
 
     setLocation(updatedLocation);
@@ -119,8 +133,8 @@ const Page = () => {
   };
 
   return (
-    <div style={{ width: '100%', height: '100%' }}>
-      <OpenLayersMap 
+    <div style={{ width: "100%", height: "100%" }}>
+      <OpenLayersMap
         pais={location.pais}
         departamento={location.departamento}
         ciudad={location.ciudad}

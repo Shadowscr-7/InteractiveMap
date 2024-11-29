@@ -1,14 +1,14 @@
-import VectorLayer from 'ol/layer/Vector';
-import VectorSource from 'ol/source/Vector';
-import { Feature } from 'ol';
-import { Point } from 'ol/geom';
-import { fromLonLat } from 'ol/proj';
-import Style from 'ol/style/Style';
-import Icon from 'ol/style/Icon';
+import VectorLayer from "ol/layer/Vector";
+import VectorSource from "ol/source/Vector";
+import { Feature } from "ol";
+import { Point } from "ol/geom";
+import { fromLonLat } from "ol/proj";
+import Style from "ol/style/Style";
+import Icon from "ol/style/Icon";
 
 const POILayer = ({ map }) => {
   const loadPOIs = async () => {
-    const apiUrl = '/api/pois'; // Cambia por tu servicio local
+    const apiUrl = "/api/pois"; // Cambia por tu servicio local
 
     try {
       const response = await fetch(apiUrl);
@@ -22,10 +22,10 @@ const POILayer = ({ map }) => {
         feature.setStyle(
           new Style({
             image: new Icon({
-              src: '/path/to/icon.png',
+              src: "/path/to/icon.png",
               scale: 0.7,
             }),
-          })
+          }),
         );
 
         return feature;
@@ -35,7 +35,7 @@ const POILayer = ({ map }) => {
       const poiLayer = new VectorLayer({ source: poiSource });
       map.addLayer(poiLayer);
     } catch (error) {
-      console.error('Error loading POIs:', error);
+      console.error("Error loading POIs:", error);
     }
   };
 

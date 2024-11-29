@@ -1,4 +1,4 @@
-import http from './http';
+import http from "./http";
 
 /**
  * Servicio para obtener los departamentos.
@@ -7,17 +7,20 @@ import http from './http';
  */
 export const getDepartamentos = async () => {
   try {
-    const response = await http.get('/getDepartamentos', {
-      withCredentials: true, // Incluye cookies si el servidor las requiere
-    },
-    {
-      headers: {
-        Cookie: 'GX_CLIENT_ID=6b58c02d-0340-45bf-bab4-377f4376f5c0',
+    const response = await http.get(
+      "/getDepartamentos",
+      {
+        withCredentials: true, // Incluye cookies si el servidor las requiere
       },
-    });
+      {
+        headers: {
+          Cookie: "GX_CLIENT_ID=6b58c02d-0340-45bf-bab4-377f4376f5c0",
+        },
+      },
+    );
     return response.data.sdtDepartamentos;
   } catch (error) {
-    console.error('Error al obtener departamentos:', error);
+    console.error("Error al obtener departamentos:", error);
     throw error;
   }
 };
@@ -30,13 +33,16 @@ export const getDepartamentos = async () => {
  */
 export const getCiudades = async (departamentoId) => {
   try {
-    const response = await http.get('/getCiudades', {
+    const response = await http.get("/getCiudades", {
       params: { Departamentoid: departamentoId },
       withCredentials: true,
     });
     return response.data.sdtCiudades;
   } catch (error) {
-    console.error(`Error al obtener ciudades para DepartamentoId ${departamentoId}:`, error);
+    console.error(
+      `Error al obtener ciudades para DepartamentoId ${departamentoId}:`,
+      error,
+    );
     throw error;
   }
 };
@@ -51,18 +57,21 @@ export const getCiudades = async (departamentoId) => {
 export const getCalles = async (departamentoId, ciudadId) => {
   try {
     const response = await http.post(
-      '/getCalles',
+      "/getCalles",
       {
         DepartamentoId: departamentoId,
         CiudadId: ciudadId,
       },
       {
         withCredentials: true,
-      }
+      },
     );
     return response.data.CalleCiudad;
   } catch (error) {
-    console.error(`Error al obtener calles para DepartamentoId ${departamentoId} y CiudadId ${ciudadId}:`, error);
+    console.error(
+      `Error al obtener calles para DepartamentoId ${departamentoId} y CiudadId ${ciudadId}:`,
+      error,
+    );
     throw error;
   }
 };
@@ -77,20 +86,20 @@ export const getCalles = async (departamentoId, ciudadId) => {
 export const getMovilesData = async (escenarioId, agenciaId) => {
   try {
     const response = await http.post(
-      '/DatosMapa/ListarMovilesAgencias',
+      "/DatosMapa/ListarMovilesAgencias",
       {
         EscenarioId: escenarioId,
         AgenciaId: agenciaId,
       },
       {
         headers: {
-          Cookie: 'GX_CLIENT_ID=6b58c02d-0340-45bf-bab4-377f4376f5c0',
+          Cookie: "GX_CLIENT_ID=6b58c02d-0340-45bf-bab4-377f4376f5c0",
         },
-      }
+      },
     );
     return response.data;
   } catch (error) {
-    console.error('Error al obtener datos de Moviles:', error);
+    console.error("Error al obtener datos de Moviles:", error);
     throw error;
   }
 };
@@ -109,9 +118,13 @@ export const fetchLocalidadesFromOverpass = async (departamento) => {
       out body;
     `;
 
-    const response = await http.post('https://overpass-api.de/api/interpreter', overpassQuery, {
-      headers: { 'Content-Type': 'text/plain' },
-    });
+    const response = await http.post(
+      "https://overpass-api.de/api/interpreter",
+      overpassQuery,
+      {
+        headers: { "Content-Type": "text/plain" },
+      },
+    );
 
     return response.data.elements.map((node) => ({
       name: node.tags.name,
@@ -121,7 +134,7 @@ export const fetchLocalidadesFromOverpass = async (departamento) => {
       departamento,
     }));
   } catch (error) {
-    console.error('Error al obtener localidades desde Overpass:', error);
+    console.error("Error al obtener localidades desde Overpass:", error);
     throw error;
   }
 };
@@ -134,7 +147,7 @@ export const fetchLocalidadesFromOverpass = async (departamento) => {
  */
 export const sendLocalidadToService = async (localidad) => {
   try {
-    const response = await http.post('/ImportarLocalidades', localidad, {
+    const response = await http.post("/ImportarLocalidades", localidad, {
       withCredentials: true,
     });
     console.log(`Localidad enviada correctamente: ${localidad.name}`);
@@ -163,29 +176,33 @@ export const fetchPuntosInteresFromOverpass = async (departamento) => {
       out center;
     `;
 
-    const response = await http.post('https://overpass-api.de/api/interpreter', overpassQuery, {
-      headers: { 'Content-Type': 'text/plain' },
-    });
+    const response = await http.post(
+      "https://overpass-api.de/api/interpreter",
+      overpassQuery,
+      {
+        headers: { "Content-Type": "text/plain" },
+      },
+    );
 
     return response.data.elements.map((element) => ({
-      name: element.tags.name || '',
-        amenity: element.tags.amenity || '',
-        official_name: element.tags['official_name'] || '',
-        phone: element.tags.phone || '',
-        lat: element.lat || (element.center?.lat) || '',
-        lon: element.lon || (element.center?.lon) || '',
-        street: element.tags['addr:street'] || '',
-        place:
-          element.tags['addr:city'] ||
-          element.tags['addr:suburb'] ||
-          element.tags['addr:hamlet'] ||
-          '',
-        housenumber: element.tags['addr:housenumber'] || '',
-        branch: element.tags.branch || '',
-        departamento,
+      name: element.tags.name || "",
+      amenity: element.tags.amenity || "",
+      official_name: element.tags["official_name"] || "",
+      phone: element.tags.phone || "",
+      lat: element.lat || element.center?.lat || "",
+      lon: element.lon || element.center?.lon || "",
+      street: element.tags["addr:street"] || "",
+      place:
+        element.tags["addr:city"] ||
+        element.tags["addr:suburb"] ||
+        element.tags["addr:hamlet"] ||
+        "",
+      housenumber: element.tags["addr:housenumber"] || "",
+      branch: element.tags.branch || "",
+      departamento,
     }));
   } catch (error) {
-    console.error('Error al obtener puntos de interés desde Overpass:', error);
+    console.error("Error al obtener puntos de interés desde Overpass:", error);
     throw error;
   }
 };
@@ -198,7 +215,7 @@ export const fetchPuntosInteresFromOverpass = async (departamento) => {
  */
 export const sendPOIToService = async (poi) => {
   try {
-    const response = await http.post('/ImportarPtosInteres', poi, {
+    const response = await http.post("/ImportarPtosInteres", poi, {
       withCredentials: true,
     });
     console.log(`Punto de interés enviado correctamente: ${poi.name}`);
@@ -216,7 +233,7 @@ export const sendPOIToService = async (poi) => {
  */
 export const sendStreetToService = async (calle) => {
   try {
-    const response = await http.post('/ImportarCalles', calle, {
+    const response = await http.post("/ImportarCalles", calle, {
       withCredentials: true,
     });
     console.log(`Calle enviada correctamente: ${calle.name}`);
@@ -233,29 +250,32 @@ export const sendStreetToService = async (calle) => {
  * @returns {Promise<Array>} Lista de POIs.
  */
 export const fetchPOIs = async (params) => {
-  console.log('Iniciando fetchPOIs con los siguientes parámetros:', params);
+  console.log("Iniciando fetchPOIs con los siguientes parámetros:", params);
 
   try {
-    const response = await http.post('/getPOIs', params, {
+    const response = await http.post("/getPOIs", params, {
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
 
-    console.log('Respuesta recibida de /getPOIs:', response);
+    console.log("Respuesta recibida de /getPOIs:", response);
 
     if (response.status !== 200) {
-      console.error('Error en la respuesta de /getPOIs, código de estado:', response.status);
-      throw new Error('Error fetching POIs');
+      console.error(
+        "Error en la respuesta de /getPOIs, código de estado:",
+        response.status,
+      );
+      throw new Error("Error fetching POIs");
     }
 
-    console.log('Datos obtenidos de /getPOIs:', response.data);
-    console.log('Datos obtenidos de /getPOIs 2:', response.data.sdtPOIs);
+    console.log("Datos obtenidos de /getPOIs:", response.data);
+    console.log("Datos obtenidos de /getPOIs 2:", response.data.sdtPOIs);
 
     return response.data.sdtPOIs || [];
   } catch (error) {
-    console.error('Error al obtener POIs en fetchPOIs:', error.message);
-    console.error('Detalles del error:', error);
+    console.error("Error al obtener POIs en fetchPOIs:", error.message);
+    console.error("Detalles del error:", error);
     throw error;
   }
 };
@@ -268,21 +288,18 @@ export const fetchPOIs = async (params) => {
  */
 export const getIdentificador = async (params) => {
   try {
-    const response = await http.post('/getIdentificador',
-      params,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          Cookie: 'GX_CLIENT_ID=cbf08e02-eb36-4c6b-b019-eda6ae23d7eb',
-        },
-      }
-    );
+    const response = await http.post("/getIdentificador", params, {
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: "GX_CLIENT_ID=cbf08e02-eb36-4c6b-b019-eda6ae23d7eb",
+      },
+    });
 
-    console.log('Identificador obtenido correctamente:', response.data);
+    console.log("Identificador obtenido correctamente:", response.data);
     return response.data;
   } catch (error) {
-    console.error('Error al obtener el identificador:', error.message);
-    console.error('Detalles del error:', error);
+    console.error("Error al obtener el identificador:", error.message);
+    console.error("Detalles del error:", error);
     throw error;
   }
 };

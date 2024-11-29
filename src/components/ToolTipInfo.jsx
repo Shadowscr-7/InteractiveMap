@@ -1,8 +1,8 @@
 // src/components/TooltipInfo.js
-'use client';
+"use client";
 
-import React from 'react';
-import './TooltipInfo.css'; // Archivo CSS para estilos personalizados
+import React from "react";
+import "./TooltipInfo.css"; // Archivo CSS para estilos personalizados
 
 const TooltipInfo = ({ data, position, title }) => {
   if (!data) return null;
@@ -18,7 +18,7 @@ const TooltipInfo = ({ data, position, title }) => {
       <h4>{title}</h4>
       {Object.entries(data).map(([key, value]) => (
         <p key={key}>
-          <strong>{key.replace(/_/g, ' ')}:</strong> {value}
+          <strong>{key.replace(/_/g, " ")}:</strong> {value}
         </p>
       ))}
     </div>

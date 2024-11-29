@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { AppBar, Toolbar, Typography, IconButton } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
+import React from "react";
+import { AppBar, Toolbar, Typography, IconButton } from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
 
 interface HeaderProps {
   onToggleSidebar: () => void;
@@ -10,7 +10,10 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
   return (
-    <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+    <AppBar
+      position="fixed"
+      sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
+    >
       <Toolbar>
         <IconButton
           color="inherit"
@@ -21,7 +24,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
           <MenuIcon />
         </IconButton>
         <Typography variant="h6" noWrap>
-          RIOGAS - STP1710 
+          RIOGAS - STP1710
         </Typography>
       </Toolbar>
     </AppBar>

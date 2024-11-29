@@ -1,8 +1,8 @@
-import { Feature } from 'ol';
-import { Point } from 'ol/geom';
-import { fromLonLat } from 'ol/proj';
-import VectorLayer from 'ol/layer/Vector';
-import VectorSource from 'ol/source/Vector';
+import { Feature } from "ol";
+import { Point } from "ol/geom";
+import { fromLonLat } from "ol/proj";
+import VectorLayer from "ol/layer/Vector";
+import VectorSource from "ol/source/Vector";
 
 const ReferencePoints = ({ map }) => {
   const addReferencePoint = (lon, lat) => {
@@ -18,8 +18,8 @@ const ReferencePoints = ({ map }) => {
   return (
     <button
       onClick={() => {
-        const lon = prompt('Longitud:');
-        const lat = prompt('Latitud:');
+        const lon = prompt("Longitud:");
+        const lat = prompt("Latitud:");
         if (lon && lat) addReferencePoint(lon, lat);
       }}
     >

@@ -1,9 +1,9 @@
 // src/app/zones/page.tsx
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import ZonesMap from '@/components/ZonesMap';
-import { zonesData } from '@/data/zonesData';
+import { useState, useEffect } from "react";
+import ZonesMap from "@/components/ZonesMap";
+import { zonesData } from "@/data/zonesData";
 
 interface Zone {
   nombre: string;
@@ -22,7 +22,7 @@ const ZonesPage = () => {
   }, []);
 
   return (
-    <div style={{ width: '100%', height: '100%' }}>
+    <div style={{ width: "100%", height: "100%" }}>
       <h2>Mapa de Zonas</h2>
       <ZonesMap zones={zones} />
     </div>

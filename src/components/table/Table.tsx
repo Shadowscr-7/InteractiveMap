@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React from 'react';
+import React from "react";
 import {
   Table as MuiTable,
   TableBody,
@@ -11,10 +11,10 @@ import {
   Typography,
   Box,
   IconButton,
-} from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import VisibilityIcon from '@mui/icons-material/Visibility';
+} from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 
 interface TableProps {
   headers: string[]; // Array de strings para los encabezados
@@ -43,8 +43,8 @@ const Table: React.FC<TableProps> = ({
           component="div"
           sx={{
             marginBottom: 2,
-            fontWeight: 'bold',
-            color: '#3f51b5',
+            fontWeight: "bold",
+            color: "#3f51b5",
           }}
         >
           {title}
@@ -53,16 +53,16 @@ const Table: React.FC<TableProps> = ({
       <TableContainer>
         <MuiTable>
           <TableHead>
-            <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+            <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
               {actions && (
                 <TableCell
                   sx={{
-                    fontWeight: 'bold',
-                    color: '#3f51b5',
-                    textTransform: 'uppercase',
-                    padding: '10px',
-                    borderBottom: '2px solid #e0e0e0',
-                    textAlign: 'center',
+                    fontWeight: "bold",
+                    color: "#3f51b5",
+                    textTransform: "uppercase",
+                    padding: "10px",
+                    borderBottom: "2px solid #e0e0e0",
+                    textAlign: "center",
                   }}
                 >
                   Acciones
@@ -72,11 +72,11 @@ const Table: React.FC<TableProps> = ({
                 <TableCell
                   key={index}
                   sx={{
-                    fontWeight: 'bold',
-                    color: '#3f51b5',
-                    textTransform: 'uppercase',
-                    padding: '10px',
-                    borderBottom: '2px solid #e0e0e0',
+                    fontWeight: "bold",
+                    color: "#3f51b5",
+                    textTransform: "uppercase",
+                    padding: "10px",
+                    borderBottom: "2px solid #e0e0e0",
                   }}
                 >
                   {header}
@@ -89,26 +89,26 @@ const Table: React.FC<TableProps> = ({
               <TableRow
                 key={rowIndex}
                 sx={{
-                  '&:nth-of-type(odd)': {
-                    backgroundColor: '#fafafa',
+                  "&:nth-of-type(odd)": {
+                    backgroundColor: "#fafafa",
                   },
-                  '&:hover': {
-                    backgroundColor: '#f1f1f1',
-                    cursor: 'pointer',
+                  "&:hover": {
+                    backgroundColor: "#f1f1f1",
+                    cursor: "pointer",
                   },
-                  transition: 'background-color 0.2s ease',
+                  transition: "background-color 0.2s ease",
                 }}
               >
                 {actions && (
                   <TableCell
                     sx={{
-                      padding: '10px',
-                      borderBottom: '1px solid #e0e0e0',
-                      textAlign: 'center',
-                      whiteSpace: 'nowrap',
-                      display: 'flex',
+                      padding: "10px",
+                      borderBottom: "1px solid #e0e0e0",
+                      textAlign: "center",
+                      whiteSpace: "nowrap",
+                      display: "flex",
                       gap: 1,
-                      justifyContent: 'center',
+                      justifyContent: "center",
                     }}
                   >
                     <IconButton
@@ -138,9 +138,9 @@ const Table: React.FC<TableProps> = ({
                   <TableCell
                     key={colIndex}
                     sx={{
-                      padding: '10px',
-                      borderBottom: '1px solid #e0e0e0',
-                      fontSize: '14px',
+                      padding: "10px",
+                      borderBottom: "1px solid #e0e0e0",
+                      fontSize: "14px",
                     }}
                   >
                     {row[header]}

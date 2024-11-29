@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Box, Typography } from '@mui/material';
+import React from "react";
+import { Box, Typography } from "@mui/material";
 
 const Footer: React.FC = () => {
   return (
     <Box
       component="footer"
       sx={{
-        textAlign: 'center',
+        textAlign: "center",
         padding: 2,
-        backgroundColor: 'primary.main',
-        color: 'white',
+        backgroundColor: "primary.main",
+        color: "white",
       }}
     >
       <Typography variant="body2">© 2024 Mi Aplicación</Typography>
