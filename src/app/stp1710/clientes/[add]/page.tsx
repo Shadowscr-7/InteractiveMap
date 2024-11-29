@@ -38,14 +38,14 @@ const AddCliente = () => {
     <Box
       sx={{
         height: '100vh',
-        backgroundColor: '#f5f5f5',
+        backgroundColor: '#363d46',
         padding: 3,
       }}
     >
       {/* Contenido Principal */}
-      <Grid container spacing={2} sx={{ height: 'calc(100% - 80px)' }}>
+      <Grid container spacing={2} sx={{ height: 'calc(100% - 80px)' }} >
         {/* Sección del Formulario */}
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={6} >
           <Paper
             elevation={3}
             sx={{
@@ -54,6 +54,8 @@ const AddCliente = () => {
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'center',
+              color: '#fff',
+              backgroundColor: '#263238',
             }}
           >
             <FormHome onParamsChange={handleParamsChange} params={params}/>
@@ -68,6 +70,7 @@ const AddCliente = () => {
               height: '100%',
               overflow: 'hidden',
               padding: 3,
+              backgroundColor: '#263238',
             }}
           >
             <MapCompleto 

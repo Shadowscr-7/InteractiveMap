@@ -190,85 +190,172 @@ const FormHome = ({ onParamsChange, params }) => {
       <Grid container spacing={3}>
   {/* Columna Izquierda */}
   <Grid item xs={12} sm={6}>
-    {/* Combo Departamento */}
-    <Autocomplete
-      options={departamentos}
-      getOptionLabel={(option) => option.DepartamentoNombre}
-      value={departamento}
-      onChange={handleDepartamentoChange}
-      renderInput={(params) => (
-        <TextField {...params} label="Departamento" variant="outlined" fullWidth />
-      )}
-    />
-  </Grid>
+  {/* Combo Departamento */}
+  <Autocomplete
+    options={departamentos}
+    getOptionLabel={(option) => option.DepartamentoNombre}
+    value={departamento}
+    onChange={handleDepartamentoChange}
+    renderInput={(params) => (
+      <TextField
+        {...params}
+        label="Departamento"
+        variant="outlined"
+        fullWidth
+        sx={{
+          "& .MuiOutlinedInput-root": {
+            color: "#ffffff", // Texto blanco
+            "& fieldset": {
+              borderColor: "#ffffff", // Bordes blancos
+            },
+            "&:hover fieldset": {
+              borderColor: "#ffffff", // Bordes al pasar el mouse
+            },
+            "&.Mui-focused fieldset": {
+              borderColor: "#ffffff", // Bordes al enfocar
+            },
+          },
+          "& .MuiInputLabel-root": {
+            color: "#ffffff", // Label blanco
+          },
+          "& .MuiInputLabel-root.Mui-focused": {
+            color: "#ffffff", // Label blanco al enfocar
+          },
+        }}
+      />
+    )}
+  />
+</Grid>
 
+<Grid item xs={12} sm={6}>
   {/* Combo Ciudad */}
-  <Grid item xs={12} sm={6}>
-    <Autocomplete
-      options={ciudades}
-      getOptionLabel={(option) => option.CiudadNombre}
-      value={ciudad}
-      onChange={handleCiudadChange}
-      loading={loadingCiudades}
-      renderInput={(params) => (
-        <TextField
-          {...params}
-          label="Ciudad"
-          variant="outlined"
-          fullWidth
-          InputProps={{
-            ...params.InputProps,
-            endAdornment: (
-              <>
-                {loadingCiudades ? <CircularProgress color="inherit" size={20} /> : null}
-                {params.InputProps.endAdornment}
-              </>
-            ),
-          }}
-        />
-      )}
-    />
-  </Grid>
+  <Autocomplete
+    options={ciudades}
+    getOptionLabel={(option) => option.CiudadNombre}
+    value={ciudad}
+    onChange={handleCiudadChange}
+    loading={loadingCiudades}
+    renderInput={(params) => (
+      <TextField
+        {...params}
+        label="Ciudad"
+        variant="outlined"
+        fullWidth
+        sx={{
+          "& .MuiOutlinedInput-root": {
+            color: "#ffffff", // Texto blanco
+            "& fieldset": {
+              borderColor: "#ffffff", // Bordes blancos
+            },
+            "&:hover fieldset": {
+              borderColor: "#ffffff", // Bordes al pasar el mouse
+            },
+            "&.Mui-focused fieldset": {
+              borderColor: "#ffffff", // Bordes al enfocar
+            },
+          },
+          "& .MuiInputLabel-root": {
+            color: "#ffffff", // Label blanco
+          },
+          "& .MuiInputLabel-root.Mui-focused": {
+            color: "#ffffff", // Label blanco al enfocar
+          },
+        }}
+        InputProps={{
+          ...params.InputProps,
+          endAdornment: (
+            <>
+              {loadingCiudades ? <CircularProgress color="inherit" size={20} /> : null}
+              {params.InputProps.endAdornment}
+            </>
+          ),
+        }}
+      />
+    )}
+  />
+</Grid>
 
+<Grid item xs={12} sm={6}>
   {/* Combo Calle */}
-  <Grid item xs={12} sm={6}>
-    <Autocomplete
-      options={calles}
-      getOptionLabel={(option) => option.CalleNombre}
-      value={calle}
-      onChange={handleCalleChange}
-      loading={loadingCalles}
-      renderInput={(params) => (
-        <TextField
-          {...params}
-          label="Calle Principal"
-          variant="outlined"
-          fullWidth
-          InputProps={{
-            ...params.InputProps,
-            endAdornment: (
-              <>
-                {loadingCalles ? <CircularProgress color="inherit" size={20} /> : null}
-                {params.InputProps.endAdornment}
-              </>
-            ),
-          }}
-        />
-      )}
-    />
-  </Grid>
+  <Autocomplete
+    options={calles}
+    getOptionLabel={(option) => option.CalleNombre}
+    value={calle}
+    onChange={handleCalleChange}
+    loading={loadingCalles}
+    renderInput={(params) => (
+      <TextField
+        {...params}
+        label="Calle Principal"
+        variant="outlined"
+        fullWidth
+        sx={{
+          "& .MuiOutlinedInput-root": {
+            color: "#ffffff", // Texto blanco
+            "& fieldset": {
+              borderColor: "#ffffff", // Bordes blancos
+            },
+            "&:hover fieldset": {
+              borderColor: "#ffffff", // Bordes al pasar el mouse
+            },
+            "&.Mui-focused fieldset": {
+              borderColor: "#ffffff", // Bordes al enfocar
+            },
+          },
+          "& .MuiInputLabel-root": {
+            color: "#ffffff", // Label blanco
+          },
+          "& .MuiInputLabel-root.Mui-focused": {
+            color: "#ffffff", // Label blanco al enfocar
+          },
+        }}
+        InputProps={{
+          ...params.InputProps,
+          endAdornment: (
+            <>
+              {loadingCalles ? <CircularProgress color="inherit" size={20} /> : null}
+              {params.InputProps.endAdornment}
+            </>
+          ),
+        }}
+      />
+    )}
+  />
+</Grid>
+
 
   {/* Número de Puerta */}
   <Grid item xs={12} sm={6}>
-    <TextField
-      label="Número de Puerta"
-      variant="outlined"
-      value={numeroPuerta}
-      onChange={handleNumeroPuertaChange}
-      inputProps={{ maxLength: 6 }} // Limitar a 6 dígitos
-      fullWidth
-    />
-  </Grid>
+  <TextField
+    label="Número de Puerta"
+    variant="outlined"
+    value={numeroPuerta}
+    onChange={handleNumeroPuertaChange}
+    inputProps={{ maxLength: 6 }} // Limitar a 6 dígitos
+    fullWidth
+    sx={{
+      "& .MuiOutlinedInput-root": {
+        color: "#ffffff", // Color del texto
+        "& fieldset": {
+          borderColor: "#ffffff", // Color de los bordes
+        },
+        "&:hover fieldset": {
+          borderColor: "#ffffff", // Color de los bordes al pasar el mouse
+        },
+        "&.Mui-focused fieldset": {
+          borderColor: "#ffffff", // Color de los bordes cuando el campo está enfocado
+        },
+      },
+      "& .MuiInputLabel-root": {
+        color: "#ffffff", // Color del label
+      },
+      "& .MuiInputLabel-root.Mui-focused": {
+        color: "#ffffff", // Color del label cuando está enfocado
+      },
+    }}
+  />
+</Grid>
+
 
   {/* Combo Calle Esquina */}
   <Grid item xs={12} sm={6}>

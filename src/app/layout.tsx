@@ -23,9 +23,9 @@ export default function RootLayout({
       <body>
         <Box sx={{ display: 'flex', minHeight: '100vh', flexDirection: 'column' }}>
           <CssBaseline />
-          <Header onToggleSidebar={toggleSidebar} />
+          {/*<Header onToggleSidebar={toggleSidebar} />*/}
           <Box sx={{ display: 'flex', flexGrow: 1 }}>
-            <Sidebar isCollapsed={isSidebarCollapsed} />
+            {/*<Sidebar isCollapsed={isSidebarCollapsed} />*/}
             <Box
               component="main"
               sx={{

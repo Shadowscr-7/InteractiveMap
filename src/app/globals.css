@@ -39,4 +39,10 @@
   transition: transform 0.1s ease-out; /* Animación opcional */
 }
 
-
+.Grid {
+  background-color: #263238 !important;
+  color: #ffffff !important; /* Texto blanco para contraste */
+  padding: 16px;
+  border-radius: 8px; /* Bordes redondeados para un diseño más moderno */
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Sombras para dar profundidad */
+}
