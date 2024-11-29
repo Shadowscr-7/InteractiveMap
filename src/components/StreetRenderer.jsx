@@ -222,7 +222,7 @@ const StreetRenderer = ({ map, params, isMapReady, setLastCoordinates }) => {
           console.log("Marker rendered at:", { lon, lat });
 
           if (esquina) {
-            onParamsUpdate && onParamsUpdate({ esquina });
+            onParamsUpdate({ esquina });
             console.log("Updated esquina parameter:", esquina);
           }
         }

@@ -61,7 +61,7 @@ const AddCliente = () => {
               params={params}
               onParamsUpdate={handleParamsChange} // Añadimos onParamsUpdate
             >
-              <StreetRenderer />
+              <StreetRenderer map={undefined} params={undefined} isMapReady={undefined} setLastCoordinates={undefined} />
             </MapCompleto>
           </div>
         </Grid>
