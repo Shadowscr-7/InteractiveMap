@@ -21,7 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Box sx={{ display: 'flex', minHeight: '100vh', flexDirection: 'column', backgroundColor: '#363d46'}}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', backgroundColor: '#263238'}}>
           <CssBaseline />
           {/*<Header onToggleSidebar={toggleSidebar} />*/}
           <Box sx={{ display: 'flex', flexGrow: 1 }}>
@@ -30,9 +30,6 @@ export default function RootLayout({
               component="main"
               sx={{
                 flexGrow: 1,
-                padding: 3,
-                marginTop: 8,
-                width: isSidebarCollapsed ? 'calc(100% - 60px)' : 'calc(100% - 240px)',
                 transition: 'width 0.3s',
               }}
             >

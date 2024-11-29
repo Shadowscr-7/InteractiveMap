@@ -37,8 +37,7 @@ const AddCliente = () => {
   return (
     <Box
       sx={{
-        height: '100vh',
-        backgroundColor: '#363d46',
+        backgroundColor: '#263238',
         padding: 3,
       }}
     >
@@ -46,33 +45,15 @@ const AddCliente = () => {
       <Grid container spacing={2} sx={{ height: 'calc(100% - 80px)' }} >
         {/* Sección del Formulario */}
         <Grid item xs={12} md={6} >
-          <Paper
-            elevation={3}
-            sx={{
-              height: '100%',
-              padding: 3,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              color: '#fff',
-              backgroundColor: '#263238',
-            }}
+          <div
           >
             <FormHome onParamsChange={handleParamsChange} params={params}/>
-          </Paper>
+          </div>
         </Grid>
 
         {/* Sección del Mapa */}
         <Grid item xs={12} md={6}>
-          <Paper
-            elevation={3}
-            sx={{
-              height: '100%',
-              overflow: 'hidden',
-              padding: 3,
-              backgroundColor: '#263238',
-            }}
-          >
+          <div>
             <MapCompleto 
               params={params}
               onParamsUpdate={handleParamsChange} // Añadimos onParamsUpdate
@@ -80,7 +61,7 @@ const AddCliente = () => {
               <StreetRenderer />
             </MapCompleto>
 
-          </Paper>
+          </div>
         </Grid>
       </Grid>
     </Box>

@@ -403,7 +403,7 @@ useEffect(() => {
       style={{
         position: "relative",
         width: "100%",
-        height: "400px", // Alto fijo del mapa
+        height: "300px", // Alto fijo del mapa
       }}
     >
       <div id="map" style={{ width: "100%", height: "100%" }} />

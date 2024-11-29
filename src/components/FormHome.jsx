@@ -181,12 +181,6 @@ const FormHome = ({ onParamsChange, params }) => {
 
   return (
     <>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h5" component="h2" gutterBottom>
-          Localización
-        </Typography>
-      </Box>
-
       <Grid container spacing={3}>
   {/* Columna Izquierda */}
   <Grid item xs={12} sm={6}>
@@ -371,6 +365,26 @@ const FormHome = ({ onParamsChange, params }) => {
           label="Calle Esquina"
           variant="outlined"
           fullWidth
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              color: "#ffffff", // Texto blanco
+              "& fieldset": {
+                borderColor: "#ffffff", // Bordes blancos
+              },
+              "&:hover fieldset": {
+                borderColor: "#ffffff", // Bordes al pasar el mouse
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: "#ffffff", // Bordes al enfocar
+              },
+            },
+            "& .MuiInputLabel-root": {
+              color: "#ffffff", // Label blanco
+            },
+            "& .MuiInputLabel-root.Mui-focused": {
+              color: "#ffffff", // Label blanco al enfocar
+            },
+          }}
           InputProps={{
             ...params.InputProps,
             endAdornment: (
