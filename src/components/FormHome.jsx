@@ -183,7 +183,7 @@ const FormHome = ({ onParamsChange, params }) => {
     <>
       <Box sx={{ mb: 3 }}>
         <Typography variant="h5" component="h2" gutterBottom>
-          Datos del Cliente
+          Localización
         </Typography>
       </Box>
 
