@@ -50,21 +50,84 @@ const ImportForm = () => {
 
     try {
       console.log('Obteniendo calles del departamento desde Overpass...');
-      const calles = await fetchCallesFromOverpass(pais, departamento);
-      const enrichedStreets = await enrichStreetsWithNominatim(calles, pais, departamento);
 
-      // Enviar cada calle al servicio
-      for (const street of enrichedStreets) {
-        if (street.lat && street.lon) {
-          await sendStreetToService({
-            name: street.name,
-            lat: street.lat,
-            lon: street.lon,
-            place: street.localidad,
-            departamento: street.departamento,
+      const overpassQuery = `
+        [out:json];
+        area["name"="Uruguay"]["admin_level"="2"]->.country;
+        area["name"="${departamento}"]["admin_level"="4"](area.country)->.searchArea;
+        (
+          way["highway"]["name"](area.searchArea);
+        );
+        out tags;
+      `;
+      const overpassResponse = await fetch('https://overpass-api.de/api/interpreter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: overpassQuery,
+      });
+
+      if (!overpassResponse.ok) {
+        throw new Error(`Error en Overpass API: ${overpassResponse.status}`);
+      }
+
+      const overpassData = await overpassResponse.json();
+
+      const uniqueStreets = Array.from(
+        new Map(
+          overpassData.elements.map((way) => [
+            way.tags.name,
+            { name: way.tags.name, old_name: way.tags.old_name || 'N/A' },
+          ])
+        ).values()
+      );
+
+      const enrichedStreets = [];
+
+      for (const street of uniqueStreets) {
+        const nominatimUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+          street.name
+        )}, ${departamento}, ${pais}&format=json&addressdetails=1`;
+
+        try {
+          const nominatimResponse = await fetch(nominatimUrl, {
+            headers: { 'User-Agent': 'YourAppName/1.0' },
           });
-          await delay(1000); // Delay para evitar saturar el servidor
+
+          if (!nominatimResponse.ok) {
+            throw new Error(`Error en Nominatim para ${street.name}`);
+          }
+
+          const nominatimData = await nominatimResponse.json();
+
+          const address = nominatimData[0]?.address || {};
+          const localidad = address.city || address.town || address.village || address.suburb || address.neighbourhood || address.hamlet || 'Desconocido';
+          const departamento = address.state;
+          const lat = nominatimData[0]?.lat || null;
+          const lon = nominatimData[0]?.lon || null;
+
+          enrichedStreets.push({
+            ...street,
+            localidad,
+            departamento,
+            lat,
+            lon,
+          });
+
+          if (lat && lon) {
+            await sendStreetToService({
+              name: street.name,
+              lat,
+              lon,
+              place: localidad,
+              departamento: departamento,
+            });
+          }
+        } catch (error) {
+          console.warn(`Error consultando Nominatim para ${street.name}:`, error.message);
+          enrichedStreets.push({ ...street, localidad: 'Error', lat: null, lon: null });
         }
+
+        await delay(1000);
       }
 
       setResultados(enrichedStreets);

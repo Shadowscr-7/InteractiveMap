@@ -30,6 +30,7 @@ const MapCompleto = ({ params, children, onParamsUpdate }) => {
   );
   // Accede a los parámetros desde params
   const { pais, departamento, ciudad, calle, numero, esquina } = params;
+  const [showPOIControls, setShowPOIControls] = useState(false); // Estado para controlar la visibilidad de los botones
 
   // Log para verificar los parámetros
   console.log('Parámetros iniciales:', { pais, departamento, ciudad, calle, numero, esquina });
@@ -400,74 +401,104 @@ useEffect(() => {
     <div
       id="map-container"
       style={{
-        position: 'relative',
-        width: '100%',
-        height: '400px', // Alto fijo del mapa
+        position: "relative",
+        width: "100%",
+        height: "400px", // Alto fijo del mapa
       }}
     >
-      <div id="map" style={{ width: '100%', height: '100%' }} />
-  
+      <div id="map" style={{ width: "100%", height: "100%" }} />
+
       <div
         id="poi-tooltip"
         style={{
-          position: 'absolute',
-          backgroundColor: '#fff',
-          padding: '5px 10px',
-          borderRadius: '5px',
-          boxShadow: '0 2px 5px rgba(0,0,0,0.3)',
-          color: 'black', // Color negro para el texto
-          pointerEvents: 'none',
+          position: "absolute",
+          backgroundColor: "#fff",
+          padding: "5px 10px",
+          borderRadius: "5px",
+          boxShadow: "0 2px 5px rgba(0,0,0,0.3)",
+          color: "black", // Color negro para el texto
+          pointerEvents: "none",
           zIndex: 1000,
-          visibility: 'hidden',
+          visibility: "hidden",
         }}
       ></div>
-  
+
       {/* Botón de centrado */}
       {isMapReady && (
         <div
           style={{
-            position: 'absolute',
-            top: '10px',
-            right: '10px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '10px',
+            position: "absolute",
+            top: "10px",
+            right: "10px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "10px",
             zIndex: 1000,
           }}
         >
           <div
             onClick={handleCenterMap}
             style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '50%',
-              backgroundColor: '#fff',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
-              cursor: 'pointer',
+              width: "40px",
+              height: "40px",
+              borderRadius: "50%",
+              backgroundColor: "#fff",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              boxShadow: "0 2px 5px rgba(0, 0, 0, 0.3)",
+              cursor: "pointer",
             }}
           >
             <img
               src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23007bff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-crosshair'%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3Cline x1='22' y1='12' x2='18' y2='12'%3E%3C/line%3E%3Cline x1='6' y1='12' x2='2' y2='12'%3E%3C/line%3E%3Cline x1='12' y1='6' x2='12' y2='2'%3E%3C/line%3E%3Cline x1='12' y1='22' x2='12' y2='18'%3E%3C/line%3E%3C/svg%3E"
               alt="Center Icon"
-              style={{ width: '20px', height: '20px' }}
+              style={{ width: "20px", height: "20px" }}
             />
           </div>
         </div>
       )}
-  
-      {/* Controles de selección de POIs */}
+
+      {/* Botón para mostrar/ocultar POI Controls */}
       {isMapReady && (
         <div
           style={{
-            position: 'absolute',
-            top: '60px',
-            right: '10px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '10px',
+            position: "absolute",
+            top: "60px",
+            right: "10px",
+            zIndex: 1000,
+          }}
+        >
+          <div
+            onClick={() => setShowPOIControls(!showPOIControls)}
+            style={{
+              width: "40px",
+              height: "40px",
+              borderRadius: "50%",
+              backgroundColor: "#007bff",
+              color: "#fff",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              cursor: "pointer",
+              boxShadow: "0 2px 5px rgba(0, 0, 0, 0.3)",
+            }}
+          >
+            {showPOIControls ? "▲" : "▼"}
+          </div>
+        </div>
+      )}
+
+      {/* Controles de selección de POIs */}
+      {isMapReady && showPOIControls && (
+        <div
+          style={{
+            position: "absolute",
+            top: "110px",
+            right: "10px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "10px",
             zIndex: 1000,
           }}
         >
@@ -476,73 +507,73 @@ useEffect(() => {
               key={key}
               onClick={() => handlePOISelection(key)}
               style={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                width: '40px',
-                height: '40px',
-                borderRadius: '50%',
-                backgroundColor: selectedPOIs.includes(key) ? '#aaa' : '#fff', // Fondo gris neutro
-                color: '#000', // Color de texto negro
-                boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
-                cursor: 'pointer',
-                position: 'relative',
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                width: "40px",
+                height: "40px",
+                borderRadius: "50%",
+                backgroundColor: selectedPOIs.includes(key) ? "#aaa" : "#fff", // Fondo gris neutro
+                color: "#000", // Color de texto negro
+                boxShadow: "0 2px 5px rgba(0, 0, 0, 0.3)",
+                cursor: "pointer",
               }}
               title={tooltip}
             >
-              <img src={icon} alt={tooltip} style={{ width: '25px', height: '25px' }} />
+              <img src={icon} alt={tooltip} style={{ width: "25px", height: "25px" }} />
             </div>
           ))}
         </div>
       )}
-  
+
+      {/* Otros elementos */}
       {isLoading && (
         <div
           style={{
-            position: 'absolute',
+            position: "absolute",
             top: 0,
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(255, 255, 255, 0.8)',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
+            backgroundColor: "rgba(255, 255, 255, 0.8)",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
             zIndex: 1000,
           }}
         >
           <div
             style={{
-              width: '50px',
-              height: '50px',
-              border: '6px solid #ddd',
-              borderTop: '6px solid #007bff',
-              borderRadius: '50%',
-              animation: 'spinner 1s linear infinite',
+              width: "50px",
+              height: "50px",
+              border: "6px solid #ddd",
+              borderTop: "6px solid #007bff",
+              borderRadius: "50%",
+              animation: "spinner 1s linear infinite",
             }}
           ></div>
-          <p style={{ marginTop: '10px', fontSize: '16px', fontWeight: 'bold' }}>Cargando ubicación...</p>
+          <p style={{ marginTop: "10px", fontSize: "16px", fontWeight: "bold" }}>Cargando ubicación...</p>
         </div>
       )}
-  
+
       {errorMessage && (
         <div
           style={{
-            position: 'absolute',
-            top: '10px',
-            left: '10px',
-            backgroundColor: 'rgba(255, 0, 0, 0.8)',
-            color: '#fff',
-            padding: '10px',
-            borderRadius: '5px',
+            position: "absolute",
+            top: "10px",
+            left: "10px",
+            backgroundColor: "rgba(255, 0, 0, 0.8)",
+            color: "#fff",
+            padding: "10px",
+            borderRadius: "5px",
             zIndex: 1000,
           }}
         >
           <p>{errorMessage}</p>
         </div>
       )}
-  
+
       {isMapReady &&
         children &&
         React.Children.map(children, (child) =>
@@ -558,7 +589,7 @@ useEffect(() => {
         )}
     </div>
   );
-  };
+};
   
   export default MapCompleto;
   

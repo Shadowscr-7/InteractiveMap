@@ -42,26 +42,6 @@ const AddCliente = () => {
         padding: 3,
       }}
     >
-      {/* Encabezado */}
-      <Box
-        sx={{
-          marginBottom: 3,
-          textAlign: 'center',
-          padding: 2,
-          backgroundColor: '#fff',
-          borderRadius: 2,
-          boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
-          color: '#000'
-        }}
-      >
-        <Typography variant="h4" component="h1" gutterBottom>
-          Alta Cliente
-        </Typography>
-        <Typography variant="subtitle1" color="textSecondary">
-          Selecciona tu ubicación y observa el mapa interactivo.
-        </Typography>
-      </Box>
-
       {/* Contenido Principal */}
       <Grid container spacing={2} sx={{ height: 'calc(100% - 80px)' }}>
         {/* Sección del Formulario */}
