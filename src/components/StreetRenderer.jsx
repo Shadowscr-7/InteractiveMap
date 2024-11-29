@@ -152,87 +152,85 @@ const StreetRenderer = ({ map, params, isMapReady, setLastCoordinates }) => {
           }
         } else {
           // Caso: Calle + Esquina
-          console.log("Caso: Calle + Esquina");
-          const overpassQuery = `
-            [out:json];
-            (
-              way["highway"]["name"="${calle}"];
-              way["highway"]["name"="${esquina}"];
-            );
-            node(w)->.nodes;
-            node.nodes["highway"];
-            out body;
-          `;
-          console.log("Overpass query for intersection:", overpassQuery);
+      console.log("Caso: Calle + Esquina");
+      const overpassQuery = `
+        [out:json];
+        way["name"="${calle}"]->.street1;  // Primera calle
+        way["name"="${esquina}"]->.street2;  // Segunda calle
+        node(w.street1)(w.street2);  // Nodo en la intersección
+        out geom;
+      `;
+      console.log("Overpass query for intersection:", overpassQuery);
 
-          const response = await fetch(
-            "https://overpass-api.de/api/interpreter",
-            {
-              method: "POST",
-              body: overpassQuery,
-              headers: { "Content-Type": "text/plain" },
-            },
-          );
+      const response = await fetch(
+        "https://overpass-api.de/api/interpreter",
+        {
+          method: "POST",
+          body: overpassQuery,
+          headers: { "Content-Type": "text/plain" },
+        },
+      );
 
-          if (!response.ok) throw new Error("Overpass API error");
-          const overpassData = await response.json();
-          console.log("Overpass data for intersection:", overpassData);
+      if (!response.ok) throw new Error("Overpass API error");
+      const overpassData = await response.json();
+      console.log("Overpass data for intersection:", overpassData);
 
-          // Filtrar nodos relevantes para intersección
-          const intersectionNode = overpassData.elements.find(
-            (el) => el.type === "node",
-          );
-          if (intersectionNode) {
-            lon = intersectionNode.lon;
-            lat = intersectionNode.lat;
-            console.log(
-              "Marker data from Overpass (intersection):",
-              intersectionNode,
-            );
-          } else {
-            console.warn("No intersection found for Calle + Esquina.");
-            return;
-          }
-        }
-
-        if (lon !== undefined && lat !== undefined) {
-          // Crear y agregar marcador
-          const marker = new Feature({
-            geometry: new Point(fromLonLat([lon, lat])),
-          });
-
-          marker.setStyle(
-            new Style({
-              image: new Icon({
-                anchor: [0.5, 1],
-                src:
-                  "data:image/svg+xml;charset=utf-8," +
-                  encodeURIComponent(`
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="red" stroke="black" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-map-pin">
-                    <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"></path>
-                    <circle cx="12" cy="10" r="3"></circle>
-                  </svg>
-                `),
-                scale: 1,
-              }),
-            }),
-          );
-
-          markerSource.current.addFeature(marker);
-          map.getView().setCenter(fromLonLat([lon, lat]));
-          map.getView().setZoom(17);
-
-          console.log("Marker rendered at:", { lon, lat });
-
-          if (esquina) {
-            onParamsUpdate && onParamsUpdate({ esquina });
-            console.log("Updated esquina parameter:", esquina);
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching marker data:", error.message);
+      // Filtrar nodos relevantes para intersección
+      const intersectionNode = overpassData.elements.find(
+        (el) => el.type === "node",
+      );
+      if (intersectionNode) {
+        lon = intersectionNode.lon;
+        lat = intersectionNode.lat;
+        console.log(
+          "Marker data from Overpass (intersection):",
+          intersectionNode,
+        );
+      } else {
+        console.warn("No intersection found for Calle + Esquina.");
+        return;
       }
-    };
+    }
+
+    if (lon !== undefined && lat !== undefined) {
+      // Crear y agregar marcador
+      const marker = new Feature({
+        geometry: new Point(fromLonLat([lon, lat])),
+      });
+
+      marker.setStyle(
+        new Style({
+          image: new Icon({
+            anchor: [0.5, 1],
+            src:
+              "data:image/svg+xml;charset=utf-8," +
+              encodeURIComponent(`
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="red" stroke="black" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-map-pin">
+                <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+            `),
+            scale: 1,
+          }),
+        }),
+      );
+
+      markerSource.current.addFeature(marker);
+      map.getView().setCenter(fromLonLat([lon, lat]));
+      map.getView().setZoom(17);
+
+      console.log("Marker rendered at:", { lon, lat });
+
+      if (esquina) {
+        onParamsUpdate && onParamsUpdate({ esquina });
+        console.log("Updated esquina parameter:", esquina);
+      }
+    }
+  } catch (error) {
+    console.error("Error fetching marker data:", error.message);
+  }
+};
+    
 
     if (numero || esquina) {
       fetchMarkerData();
