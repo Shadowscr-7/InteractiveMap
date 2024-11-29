@@ -27,7 +27,10 @@ async function findNodes(calle, targetLat, targetLon, radius = 500) {
     });
 
     if (!response.ok) {
-      console.error("Error en la solicitud a Overpass API:", response.statusText);
+      console.error(
+        "Error en la solicitud a Overpass API:",
+        response.statusText,
+      );
       throw new Error(`Overpass API Error: ${response.statusText}`);
     }
 
@@ -45,7 +48,10 @@ async function findNodes(calle, targetLat, targetLon, radius = 500) {
       tags: node.tags,
     }));
   } catch (error) {
-    console.error("Error al procesar la consulta de Overpass API:", error.message);
+    console.error(
+      "Error al procesar la consulta de Overpass API:",
+      error.message,
+    );
     return [];
   }
 }
@@ -57,7 +63,9 @@ async function reverseGeocode(lat, lon) {
   try {
     const response = await fetch(nominatimUrl);
     if (!response.ok) {
-      console.error(`Error en la geocodificación inversa: ${response.statusText}`);
+      console.error(
+        `Error en la geocodificación inversa: ${response.statusText}`,
+      );
       return null;
     }
 
@@ -67,7 +75,10 @@ async function reverseGeocode(lat, lon) {
       details: data.address,
     };
   } catch (error) {
-    console.error(`Error al realizar geocodificación inversa para (${lat}, ${lon}):`, error.message);
+    console.error(
+      `Error al realizar geocodificación inversa para (${lat}, ${lon}):`,
+      error.message,
+    );
     return null;
   }
 }
@@ -107,7 +118,9 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   const targetLon = -56.1518006; // Longitud del punto de referencia
   const dynamicRadius = 150; // Define el radio dinámico
 
-  console.log(`Buscando nodos para la calle: ${calle} dentro de un radio de ${dynamicRadius} metros.`);
+  console.log(
+    `Buscando nodos para la calle: ${calle} dentro de un radio de ${dynamicRadius} metros.`,
+  );
 
   const nodes = await findNodes(calle, targetLat, targetLon, dynamicRadius);
 
@@ -134,7 +147,12 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
         if (isCorner) {
           console.log("- Este nodo pertenece a una esquina.");
           console.log(`- Esquina con: ${geocodeData.details.road}`);
-          const distance = calculateDistance(targetLat, targetLon, node.lat, node.lon);
+          const distance = calculateDistance(
+            targetLat,
+            targetLon,
+            node.lat,
+            node.lon,
+          );
           intersections.push({
             lat: node.lat,
             lon: node.lon,
@@ -145,7 +163,9 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
           console.log("- Este nodo no es una esquina.");
         }
       } else {
-        console.log("- No se pudo obtener información de geocodificación inversa.");
+        console.log(
+          "- No se pudo obtener información de geocodificación inversa.",
+        );
       }
     }
 

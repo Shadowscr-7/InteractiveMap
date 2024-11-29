@@ -377,7 +377,56 @@ const FormHome = ({ onParamsChange, params }) => {
             renderInput={(params) => (
               <TextField
                 {...params}
-                label="Calle Esquina"
+                label="Esquina 1"
+                variant="outlined"
+                fullWidth
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    color: "#ffffff", // Texto blanco
+                    "& fieldset": {
+                      borderColor: "#ffffff", // Bordes blancos
+                    },
+                    "&:hover fieldset": {
+                      borderColor: "#ffffff", // Bordes al pasar el mouse
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: "#ffffff", // Bordes al enfocar
+                    },
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: "#ffffff", // Label blanco
+                  },
+                  "& .MuiInputLabel-root.Mui-focused": {
+                    color: "#ffffff", // Label blanco al enfocar
+                  },
+                }}
+                InputProps={{
+                  ...params.InputProps,
+                  endAdornment: (
+                    <>
+                      {loadingCalles ? (
+                        <CircularProgress color="inherit" size={20} />
+                      ) : null}
+                      {params.InputProps.endAdornment}
+                    </>
+                  ),
+                }}
+              />
+            )}
+          />
+        </Grid>
+        {/* Combo Calle Esquina */}
+        <Grid item xs={12} sm={6}>
+          <Autocomplete
+            options={calles}
+            getOptionLabel={(option) => option.CalleNombre}
+            value={calleEsquina}
+            onChange={handleCalleEsquinaChange}
+            loading={loadingCalles}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Esquina 2"
                 variant="outlined"
                 fullWidth
                 sx={{
