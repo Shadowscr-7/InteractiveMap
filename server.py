@@ -14,7 +14,11 @@ import numpy as np
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
+import threading
+import json
 from sklearn.utils.class_weight import compute_class_weight
+LOG_FILE = 'responses_log.json'
+lock = threading.Lock()
 
 app = Flask(__name__)
 
@@ -145,36 +149,82 @@ else:
 def compare_streets():
     try:
         data = request.get_json()
+        if not data:
+            return jsonify({"error": "No se recibió ningún JSON válido en la solicitud"}), 400
+
         name1 = data.get('name1', '')
         name2 = data.get('name2', '')
         feedback = data.get('feedback', None)
+
         if not name1 or not name2:
             return jsonify({"error": "Ambos campos name1 y name2 son requeridos"}), 400
+
+        # Simulación de funciones para cálculo
         features, distance, similarity = calculate_features(name1, name2)
         prediction = model.predict(features)[0]
         decision_scores = model.decision_function(features)[0]
         score = decision_scores[prediction]
         rounded_score = round(float(score), 2)
+
         if similarity == 1.0:
             result = "Exactas"
         elif prediction == 1 and similarity >= 0.60:
             result = "Similares"
         else:
             result = "Diferentes"
-        if feedback is not None:
-            model.partial_fit(features, [int(feedback)])
-            with open(MODEL_FILE, 'wb') as model_file:
-                pickle.dump(model, model_file)
-        return jsonify({
+
+        response = {
             "name1": name1,
             "name2": name2,
             "result": result,
             "levenshtein_distance": distance,
             "similarity_score": round(similarity, 2),
             "prediction_score": rounded_score
-        })
+        }
+
+        # Guardar la respuesta en el archivo JSON
+        with lock:
+            try:
+                logs = []
+                with open(LOG_FILE, 'r') as file:
+                    content = file.read().strip()
+                    if content:  # Si el archivo no está vacío
+                        logs = json.loads(content)
+            except (FileNotFoundError, json.JSONDecodeError):
+                logs = []  # Inicializa como lista vacía si no existe o hay un error
+
+            logs.append(response)
+
+            with open(LOG_FILE, 'w') as file:
+                json.dump(logs, file, indent=4)
+
+        return jsonify(response)
+
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        error_message = str(e)
+        print(f"Error 500: {error_message}")
+
+        # Registrar el error en el archivo de logs
+        with lock:
+            error_log = {
+                "error": error_message,
+                "request_data": request.get_json()  # Incluir los datos enviados
+            }
+            try:
+                logs = []
+                with open(LOG_FILE, 'r') as file:
+                    content = file.read().strip()
+                    if content:
+                        logs = json.loads(content)
+            except (FileNotFoundError, json.JSONDecodeError):
+                logs = []
+
+            logs.append({"error": error_message, "error_data": error_log})
+
+            with open(LOG_FILE, 'w') as file:
+                json.dump(logs, file, indent=4)
+
+        return jsonify({"error": "Internal Server Error"}), 500
 
 @app.route('/geolocate', methods=['POST'])
 def geolocate():
