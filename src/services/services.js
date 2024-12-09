@@ -303,3 +303,36 @@ export const getIdentificador = async (params) => {
     throw error;
   }
 };
+
+/**
+ * Servicio para obtener la latitud y longitud de un punto de interés en un departamento y ciudad.
+ * Endpoint: /getPtoInteres
+ * @param {number} departamento - ID del departamento
+ * @param {number} ciudad - ID de la ciudad
+ * @param {string} Calle - Punto de interés a buscar
+ * @returns {Promise<{lat: number, lon: number}>} Latitud y longitud del punto de interés
+ */
+export const getPtoInteres = async (departamento, ciudad, calle) => {
+  try {
+    const response = await http.post(
+      "/getPtoInteres",
+      {
+        Departamento: departamento,
+        Ciudad: ciudad,
+        Calle: calle,
+      },
+      {
+        withCredentials: true,
+      }
+    );
+    // Se asume que la API devuelve un objeto con 'lat' y 'long'
+    const { lat, lon } = response.data;
+    return { lat, lon };
+  } catch (error) {
+    console.error(
+      `Error al obtener coordenadas para DepartamentoId ${departamento}, CiudadId ${ciudad}, PtoInteres ${ptoInteres}:`,
+      error
+    );
+    throw error;
+  }
+};

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"npm run dev:next\" \"npm run dev:ws\"",
+    "dev": "powershell -Command \"Start-Job { npm run dev:next }; Start-Job { npm run dev:ws }; Wait-Job *\"",
     "dev:next": "next dev",
     "dev:ws": "node server.js",
     "build": "next build",
