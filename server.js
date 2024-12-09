@@ -1,6 +1,6 @@
 const WebSocket = require("ws");
 const { v4: uuidv4 } = require("uuid"); // UUID para generar IDs únicos
-const wss = new WebSocket.Server({ port: 8080 });
+const wss = new WebSocket.Server({ port: 8084 });
 
 // Mapa para almacenar sesiones y su estado
 const sessions = new Map();
