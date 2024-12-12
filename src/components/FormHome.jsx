@@ -231,6 +231,16 @@ const FormHome = ({ onParamsChange, params }) => {
                 }}
               />
             )}
+            componentsProps={{
+              paper: {
+                sx: {
+                  minWidth: '300px', // Ancho mínimo
+                  width: 'auto',     // Se ajusta al contenido
+                  backgroundColor: "#ffffff", // Mantener el fondo blanco
+                  boxShadow: 3,      // Mantener las sombras
+                },
+              },
+            }}
           />
         </Grid>
 
@@ -281,57 +291,75 @@ const FormHome = ({ onParamsChange, params }) => {
                 }}
               />
             )}
+            componentsProps={{
+              paper: {
+                sx: {
+                  minWidth: '300px', // Ancho mínimo
+                  width: 'auto',     // Se ajusta al contenido
+                  backgroundColor: "#ffffff", // Mantener el fondo blanco
+                  boxShadow: 3,      // Mantener las sombras
+                },
+              },
+            }}
           />
         </Grid>
 
         <Grid item xs={6} sm={3}>
-          {/* Combo Calle */}
-          <Autocomplete
-            options={calles}
-            getOptionLabel={(option) => option.CalleNombre}
-            value={calle}
-            onChange={handleCalleChange}
-            loading={loadingCalles}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Calle Principal"
-                variant="outlined"
-                fullWidth
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    color: "#ffffff", // Texto blanco
-                    "& fieldset": {
-                      borderColor: "#ffffff", // Bordes blancos
-                    },
-                    "&:hover fieldset": {
-                      borderColor: "#ffffff", // Bordes al pasar el mouse
-                    },
-                    "&.Mui-focused fieldset": {
-                      borderColor: "#ffffff", // Bordes al enfocar
-                    },
+        <Autocomplete
+          options={calles}
+          getOptionLabel={(option) => option.CalleNombre}
+          value={calle}
+          onChange={handleCalleChange}
+          loading={loadingCalles}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Calle Principal"
+              variant="outlined"
+              fullWidth
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  color: "#ffffff", // Texto blanco
+                  "& fieldset": {
+                    borderColor: "#ffffff", // Bordes blancos
                   },
-                  "& .MuiInputLabel-root": {
-                    color: "#ffffff", // Label blanco
+                  "&:hover fieldset": {
+                    borderColor: "#ffffff", // Bordes al pasar el mouse
                   },
-                  "& .MuiInputLabel-root.Mui-focused": {
-                    color: "#ffffff", // Label blanco al enfocar
+                  "&.Mui-focused fieldset": {
+                    borderColor: "#ffffff", // Bordes al enfocar
                   },
-                }}
-                InputProps={{
-                  ...params.InputProps,
-                  endAdornment: (
-                    <>
-                      {loadingCalles ? (
-                        <CircularProgress color="inherit" size={20} />
-                      ) : null}
-                      {params.InputProps.endAdornment}
-                    </>
-                  ),
-                }}
-              />
-            )}
-          />
+                },
+                "& .MuiInputLabel-root": {
+                  color: "#ffffff", // Label blanco
+                },
+                "& .MuiInputLabel-root.Mui-focused": {
+                  color: "#ffffff", // Label blanco al enfocar
+                },
+              }}
+              InputProps={{
+                ...params.InputProps,
+                endAdornment: (
+                  <>
+                    {loadingCalles ? <CircularProgress color="inherit" size={20} /> : null}
+                    {params.InputProps.endAdornment}
+                  </>
+                ),
+              }}
+            />
+          )}
+          componentsProps={{
+            paper: {
+              sx: {
+                minWidth: '300px', // Ancho mínimo
+                width: 'auto',     // Se ajusta al contenido
+                backgroundColor: "#ffffff", // Mantener el fondo blanco
+                boxShadow: 3,      // Mantener las sombras
+              },
+            },
+          }}
+        />
+
         </Grid>
 
         {/* Número de Puerta */}
@@ -413,6 +441,16 @@ const FormHome = ({ onParamsChange, params }) => {
                 }}
               />
             )}
+            componentsProps={{
+              paper: {
+                sx: {
+                  minWidth: '300px', // Ancho mínimo
+                  width: 'auto',     // Se ajusta al contenido
+                  backgroundColor: "#ffffff", // Mantener el fondo blanco
+                  boxShadow: 3,      // Mantener las sombras
+                },
+              },
+            }}
           />
         </Grid>
         {/* Combo Calle Esquina */}
@@ -462,6 +500,47 @@ const FormHome = ({ onParamsChange, params }) => {
                 }}
               />
             )}
+            componentsProps={{
+              paper: {
+                sx: {
+                  minWidth: '300px', // Ancho mínimo
+                  width: 'auto',     // Se ajusta al contenido
+                  backgroundColor: "#ffffff", // Mantener el fondo blanco
+                  boxShadow: 3,      // Mantener las sombras
+                },
+              },
+            }}
+          />
+        </Grid>
+        {/* Observacion */}
+        <Grid item xs={12} sm={6}>
+          <TextField
+            label="Observación"
+            variant="outlined"
+            inputProps={{ maxLength: 200 }} // Limitar a 6 dígitos
+            fullWidth
+            multiline
+            rows={7}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                color: "#ffffff", // Color del texto
+                "& fieldset": {
+                  borderColor: "#ffffff", // Color de los bordes
+                },
+                "&:hover fieldset": {
+                  borderColor: "#ffffff", // Color de los bordes al pasar el mouse
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: "#ffffff", // Color de los bordes cuando el campo está enfocado
+                },
+              },
+              "& .MuiInputLabel-root": {
+                color: "#ffffff", // Color del label
+              },
+              "& .MuiInputLabel-root.Mui-focused": {
+                color: "#ffffff", // Color del label cuando está enfocado
+              },
+            }}
           />
         </Grid>
         {/* Apartamento */}
@@ -638,37 +717,7 @@ const FormHome = ({ onParamsChange, params }) => {
             }}
           />
         </Grid>
-        {/* Observacion */}
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Observación"
-            variant="outlined"
-            inputProps={{ maxLength: 200 }} // Limitar a 6 dígitos
-            fullWidth
-            multiline
-            rows={7}
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                color: "#ffffff", // Color del texto
-                "& fieldset": {
-                  borderColor: "#ffffff", // Color de los bordes
-                },
-                "&:hover fieldset": {
-                  borderColor: "#ffffff", // Color de los bordes al pasar el mouse
-                },
-                "&.Mui-focused fieldset": {
-                  borderColor: "#ffffff", // Color de los bordes cuando el campo está enfocado
-                },
-              },
-              "& .MuiInputLabel-root": {
-                color: "#ffffff", // Color del label
-              },
-              "& .MuiInputLabel-root.Mui-focused": {
-                color: "#ffffff", // Color del label cuando está enfocado
-              },
-            }}
-          />
-        </Grid>
+        
       </Grid>
     </>
   );
