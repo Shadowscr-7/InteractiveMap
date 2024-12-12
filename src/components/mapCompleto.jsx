@@ -23,6 +23,8 @@ const MapCompleto = ({ params, children, onParamsUpdate }) => {
   const [lastCoordinates, setLastCoordinates] = useState([-56.1645, -34.9011]); // Montevideo por defecto
   const [selectedPOIs, setSelectedPOIs] = useState([]);
   const markerSource = useRef(new VectorSource()); // Fuente para los marcadores de clic
+  const [isPopupOpen, setIsPopupOpen] = useState(false); // Estado para el popup
+  const [inputValue, setInputValue] = useState(""); // Estado para el cuadro de texto
   const markerLayer = useRef(
     new VectorLayer({
       source: markerSource.current,
@@ -415,6 +417,19 @@ const MapCompleto = ({ params, children, onParamsUpdate }) => {
     }
   };
 
+const openPopup = () => setIsPopupOpen(true);
+  const closePopup = () => {
+    setIsPopupOpen(false);
+    setInputValue(""); // Limpiar el cuadro de texto al cerrar
+  };
+
+  const confirmAction = () => {
+    console.log("Texto ingresado:", inputValue);
+    setIsPopupOpen(false);
+    setInputValue(""); // Limpiar después de confirmar
+  };
+
+
   return (
     <div
       id="map-container"
@@ -426,6 +441,7 @@ const MapCompleto = ({ params, children, onParamsUpdate }) => {
     >
       <div id="map" style={{ width: "100%", height: "100%" }} />
 
+      {/* Tooltip */}
       <div
         id="poi-tooltip"
         style={{
@@ -434,7 +450,7 @@ const MapCompleto = ({ params, children, onParamsUpdate }) => {
           padding: "5px 10px",
           borderRadius: "5px",
           boxShadow: "0 2px 5px rgba(0,0,0,0.3)",
-          color: "black", // Color negro para el texto
+          color: "black",
           pointerEvents: "none",
           zIndex: 1000,
           visibility: "hidden",
@@ -474,15 +490,36 @@ const MapCompleto = ({ params, children, onParamsUpdate }) => {
               style={{ width: "20px", height: "20px" }}
             />
           </div>
+
+          {/* Botón de abrir popup */}
+          <div
+            onClick={openPopup}
+            style={{
+              position: "absolute", // Misma posición que el botón de centrado
+              top: "60px", // Ajustar la distancia vertical
+              width: "40px",
+              height: "40px",
+              borderRadius: "50%",
+              backgroundColor: "#007bff",
+              color: "#fff",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              cursor: "pointer",
+              boxShadow: "0 2px 5px rgba(0, 0, 0, 0.3)",
+            }}
+          >
+            <span style={{ fontSize: "18px" }}>✍️</span>
+          </div>
         </div>
       )}
 
-      {/* Botón para mostrar/ocultar POI Controls */}
+      {/* Botón para POI Controls */}
       {isMapReady && (
         <div
           style={{
             position: "absolute",
-            top: "60px",
+            top: "120px",
             right: "10px",
             zIndex: 1000,
           }}
@@ -490,6 +527,7 @@ const MapCompleto = ({ params, children, onParamsUpdate }) => {
           <div
             onClick={() => setShowPOIControls(!showPOIControls)}
             style={{
+              position: "relative",
               width: "40px",
               height: "40px",
               borderRadius: "50%",
@@ -511,10 +549,10 @@ const MapCompleto = ({ params, children, onParamsUpdate }) => {
         <div
           style={{
             position: "absolute",
-            top: "110px",
+            top: "180px",
             right: "10px",
             display: "flex",
-            flexDirection: "row", // Cambiado a fila horizontal
+            flexDirection: "row",
             gap: "10px",
             zIndex: 1000,
           }}
@@ -530,8 +568,8 @@ const MapCompleto = ({ params, children, onParamsUpdate }) => {
                 width: "40px",
                 height: "40px",
                 borderRadius: "50%",
-                backgroundColor: selectedPOIs.includes(key) ? "#aaa" : "#fff", // Fondo gris neutro
-                color: "#000", // Color de texto negro
+                backgroundColor: selectedPOIs.includes(key) ? "#aaa" : "#fff",
+                color: "#000",
                 boxShadow: "0 2px 5px rgba(0, 0, 0, 0.3)",
                 cursor: "pointer",
               }}
@@ -544,6 +582,78 @@ const MapCompleto = ({ params, children, onParamsUpdate }) => {
               />
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Popup */}
+      {isPopupOpen && (
+        <div
+          style={{
+            position: "fixed",
+            top: "0",
+            left: "0",
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 2000,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: "#fff",
+              padding: "20px",
+              borderRadius: "10px",
+              width: "300px",
+              boxShadow: "0 5px 15px rgba(0, 0, 0, 0.3)",
+              display: "flex",
+              flexDirection: "column",
+              gap: "10px",
+            }}
+          >
+            <h3 style={{ margin: 0 }}>Nombre del Pto de Interés.</h3>
+            <input
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              placeholder="Escribe aquí..."
+              style={{
+                padding: "8px",
+                borderRadius: "5px",
+                border: "1px solid #ccc",
+              }}
+            />
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <button
+                onClick={confirmAction}
+                style={{
+                  padding: "8px 15px",
+                  backgroundColor: "#007bff",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "5px",
+                  cursor: "pointer",
+                }}
+              >
+                Confirmar
+              </button>
+              <button
+                onClick={closePopup}
+                style={{
+                  padding: "8px 15px",
+                  backgroundColor: "#dc3545",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "5px",
+                  cursor: "pointer",
+                }}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
