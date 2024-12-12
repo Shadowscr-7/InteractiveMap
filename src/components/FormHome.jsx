@@ -310,23 +310,23 @@ const FormHome = ({ onParamsChange, params }) => {
   <Grid container item spacing={3} alignItems="flex-start">
     {/* Campos pequeños */}
     <Grid item xs={12} sm={6}>
-      <Grid container spacing={2}>
-        <Grid item xs={6}>
+      <Grid container spacing={3}>
+        <Grid item xs={3}>
           <TextField label="Apto." variant="outlined" fullWidth sx={textFieldStyles} />
         </Grid>
-        <Grid item xs={6}>
+        <Grid item xs={3}>
           <TextField label="Km" variant="outlined" fullWidth sx={textFieldStyles} />
         </Grid>
-        <Grid item xs={6}>
+        <Grid item xs={3}>
           <TextField label="Manzana" variant="outlined" fullWidth sx={textFieldStyles} />
         </Grid>
-        <Grid item xs={6}>
+        <Grid item xs={3}>
           <TextField label="Block/Solar" variant="outlined" fullWidth sx={textFieldStyles} />
         </Grid>
-        <Grid item xs={6}>
+        <Grid item xs={3}>
           <TextField label="Nivel" variant="outlined" fullWidth sx={textFieldStyles} />
         </Grid>
-        <Grid item xs={6}>
+        <Grid item xs={3}>
           <TextField label="Local" variant="outlined" fullWidth sx={textFieldStyles} />
         </Grid>
       </Grid>
@@ -338,7 +338,7 @@ const FormHome = ({ onParamsChange, params }) => {
         label="Observación"
         variant="outlined"
         multiline
-        rows={7}
+        rows={5}
         fullWidth
         sx={{
           ...textFieldStyles,
