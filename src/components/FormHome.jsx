@@ -464,6 +464,211 @@ const FormHome = ({ onParamsChange, params }) => {
             )}
           />
         </Grid>
+        {/* Apartamento */}
+        <Grid item xs={6} sm={3}>
+          <TextField
+            label="Número de Apto."
+            variant="outlined"
+            inputProps={{ maxLength: 6 }} // Limitar a 6 dígitos
+            fullWidth
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                color: "#ffffff", // Color del texto
+                "& fieldset": {
+                  borderColor: "#ffffff", // Color de los bordes
+                },
+                "&:hover fieldset": {
+                  borderColor: "#ffffff", // Color de los bordes al pasar el mouse
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: "#ffffff", // Color de los bordes cuando el campo está enfocado
+                },
+              },
+              "& .MuiInputLabel-root": {
+                color: "#ffffff", // Color del label
+              },
+              "& .MuiInputLabel-root.Mui-focused": {
+                color: "#ffffff", // Color del label cuando está enfocado
+              },
+            }}
+          />
+        </Grid>
+        {/* Km */}
+        <Grid item xs={6} sm={3}>
+          <TextField
+            label="Km"
+            variant="outlined"
+            inputProps={{ maxLength: 6 }} // Limitar a 6 dígitos
+            fullWidth
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                color: "#ffffff", // Color del texto
+                "& fieldset": {
+                  borderColor: "#ffffff", // Color de los bordes
+                },
+                "&:hover fieldset": {
+                  borderColor: "#ffffff", // Color de los bordes al pasar el mouse
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: "#ffffff", // Color de los bordes cuando el campo está enfocado
+                },
+              },
+              "& .MuiInputLabel-root": {
+                color: "#ffffff", // Color del label
+              },
+              "& .MuiInputLabel-root.Mui-focused": {
+                color: "#ffffff", // Color del label cuando está enfocado
+              },
+            }}
+          />
+        </Grid>
+        {/* Nro Manz */}
+        <Grid item xs={6} sm={3}>
+          <TextField
+            label="Número de Manzana"
+            variant="outlined"
+            inputProps={{ maxLength: 6 }} // Limitar a 6 dígitos
+            fullWidth
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                color: "#ffffff", // Color del texto
+                "& fieldset": {
+                  borderColor: "#ffffff", // Color de los bordes
+                },
+                "&:hover fieldset": {
+                  borderColor: "#ffffff", // Color de los bordes al pasar el mouse
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: "#ffffff", // Color de los bordes cuando el campo está enfocado
+                },
+              },
+              "& .MuiInputLabel-root": {
+                color: "#ffffff", // Color del label
+              },
+              "& .MuiInputLabel-root.Mui-focused": {
+                color: "#ffffff", // Color del label cuando está enfocado
+              },
+            }}
+          />
+        </Grid>
+        {/* Block/Solar */}
+        <Grid item xs={6} sm={3}>
+          <TextField
+            label="Block/Solar"
+            variant="outlined"
+            inputProps={{ maxLength: 6 }} // Limitar a 6 dígitos
+            fullWidth
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                color: "#ffffff", // Color del texto
+                "& fieldset": {
+                  borderColor: "#ffffff", // Color de los bordes
+                },
+                "&:hover fieldset": {
+                  borderColor: "#ffffff", // Color de los bordes al pasar el mouse
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: "#ffffff", // Color de los bordes cuando el campo está enfocado
+                },
+              },
+              "& .MuiInputLabel-root": {
+                color: "#ffffff", // Color del label
+              },
+              "& .MuiInputLabel-root.Mui-focused": {
+                color: "#ffffff", // Color del label cuando está enfocado
+              },
+            }}
+          />
+        </Grid>
+        {/* Nivel */}
+        <Grid item xs={6} sm={3}>
+          <TextField
+            label="Nivel"
+            variant="outlined"
+            inputProps={{ maxLength: 6 }} // Limitar a 6 dígitos
+            fullWidth
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                color: "#ffffff", // Color del texto
+                "& fieldset": {
+                  borderColor: "#ffffff", // Color de los bordes
+                },
+                "&:hover fieldset": {
+                  borderColor: "#ffffff", // Color de los bordes al pasar el mouse
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: "#ffffff", // Color de los bordes cuando el campo está enfocado
+                },
+              },
+              "& .MuiInputLabel-root": {
+                color: "#ffffff", // Color del label
+              },
+              "& .MuiInputLabel-root.Mui-focused": {
+                color: "#ffffff", // Color del label cuando está enfocado
+              },
+            }}
+          />
+        </Grid>
+        {/* Local */}
+        <Grid item xs={6} sm={3}>
+          <TextField
+            label="Local"
+            variant="outlined"
+            inputProps={{ maxLength: 6 }} // Limitar a 6 dígitos
+            fullWidth
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                color: "#ffffff", // Color del texto
+                "& fieldset": {
+                  borderColor: "#ffffff", // Color de los bordes
+                },
+                "&:hover fieldset": {
+                  borderColor: "#ffffff", // Color de los bordes al pasar el mouse
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: "#ffffff", // Color de los bordes cuando el campo está enfocado
+                },
+              },
+              "& .MuiInputLabel-root": {
+                color: "#ffffff", // Color del label
+              },
+              "& .MuiInputLabel-root.Mui-focused": {
+                color: "#ffffff", // Color del label cuando está enfocado
+              },
+            }}
+          />
+        </Grid>
+        {/* Observacion */}
+        <Grid item xs={12} sm={6}>
+          <TextField
+            label="Observación"
+            variant="outlined"
+            inputProps={{ maxLength: 200 }} // Limitar a 6 dígitos
+            fullWidth
+            multiline
+            rows={7}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                color: "#ffffff", // Color del texto
+                "& fieldset": {
+                  borderColor: "#ffffff", // Color de los bordes
+                },
+                "&:hover fieldset": {
+                  borderColor: "#ffffff", // Color de los bordes al pasar el mouse
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: "#ffffff", // Color de los bordes cuando el campo está enfocado
+                },
+              },
+              "& .MuiInputLabel-root": {
+                color: "#ffffff", // Color del label
+              },
+              "& .MuiInputLabel-root.Mui-focused": {
+                color: "#ffffff", // Color del label cuando está enfocado
+              },
+            }}
+          />
+        </Grid>
       </Grid>
     </>
   );
