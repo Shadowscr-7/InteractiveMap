@@ -280,7 +280,7 @@ const FormHome = ({ onParamsChange, params }) => {
   </Grid>
 
   {/* Segunda fila */}
-  <Grid item xs={6} sm={3}>
+  <Grid item xs={12} sm={6}>
     <Autocomplete
       options={calles}
       getOptionLabel={(option) => option.CalleNombre}
@@ -293,7 +293,7 @@ const FormHome = ({ onParamsChange, params }) => {
     />
   </Grid>
 
-  <Grid item xs={6} sm={3}>
+  <Grid item xs={12} sm={6}>
     <Autocomplete
       options={calles}
       getOptionLabel={(option) => option.CalleNombre}
