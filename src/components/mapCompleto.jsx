@@ -421,7 +421,7 @@ const MapCompleto = ({ params, children, onParamsUpdate }) => {
       style={{
         position: "relative",
         width: "100%",
-        height: "300px", // Alto fijo del mapa
+        height: "450px", // Alto fijo del mapa
       }}
     >
       <div id="map" style={{ width: "100%", height: "100%" }} />
