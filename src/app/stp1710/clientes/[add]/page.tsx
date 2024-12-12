@@ -40,33 +40,40 @@ const AddCliente = () => {
 
   return (
     <Box
-      sx={{
-        backgroundColor: "#263238",
-        padding: 3,
-      }}
-    >
-      {/* Contenido Principal */}
-      <Grid container spacing={2} sx={{ height: "calc(100% - 80px)" }}>
-        {/* Sección del Formulario */}
-        <Grid item xs={12} md={6}>
-          <div>
-            <FormHome onParamsChange={handleParamsChange} params={params} />
-          </div>
-        </Grid>
+  sx={{
+    backgroundColor: "#263238",
+    padding: 3,
+    height: "100vh", // Asegura que ocupe toda la altura de la pantalla
+  }}
+>
+  {/* Contenido Principal */}
+  <Grid container spacing={2} sx={{ height: "100%" }}>
+    {/* Sección del Formulario */}
+    <Grid item xs={12} md={9}>
+      <div>
+        <FormHome onParamsChange={handleParamsChange} params={params} />
+      </div>
+    </Grid>
 
-        {/* Sección del Mapa */}
-        <Grid item xs={12} md={6}>
-          <div>
-            <MapCompleto
-              params={params}
-              onParamsUpdate={handleParamsChange} // Añadimos onParamsUpdate
-            >
-              <StreetRenderer map={undefined} params={undefined} isMapReady={undefined} setLastCoordinates={undefined} />
-            </MapCompleto>
-          </div>
-        </Grid>
-      </Grid>
-    </Box>
+    {/* Sección del Mapa */}
+    <Grid item xs={12} md={3}>
+      <div style={{ height: "100%" }}>
+        <MapCompleto
+          params={params}
+          onParamsUpdate={handleParamsChange}
+        >
+          <StreetRenderer
+            map={undefined}
+            params={undefined}
+            isMapReady={undefined}
+            setLastCoordinates={undefined}
+          />
+        </MapCompleto>
+      </div>
+    </Grid>
+  </Grid>
+</Box>
+
   );
 };
 
