@@ -297,17 +297,6 @@ const FormHome = ({ onParamsChange, params }) => {
     />
   </Grid>
 
-  <Grid item xs={6} sm={3}>
-    <TextField
-      label="Número de Puerta"
-      variant="outlined"
-      value={numeroPuerta}
-      onChange={handleNumeroPuertaChange}
-      fullWidth
-      sx={textFieldStyles}
-    />
-  </Grid>
-
   {/* Contenedor de campos pequeños y Observación */}
   <Grid container item spacing={3} alignItems="flex-start">
     {/* Campos pequeños */}
