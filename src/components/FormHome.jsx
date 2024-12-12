@@ -21,6 +21,7 @@ const FormHome = ({ onParamsChange, params }) => {
   const [departamentos, setDepartamentos] = useState([]);
   const [ciudades, setCiudades] = useState([]);
   const [calles, setCalles] = useState([]);
+  const [isKmEnabled, setIsKmEnabled] = useState(false); // Estado para habilitar/deshabilitar Km
 
   const [loadingCiudades, setLoadingCiudades] = useState(false);
   const [loadingCalles, setLoadingCalles] = useState(false);
@@ -151,6 +152,7 @@ const FormHome = ({ onParamsChange, params }) => {
   };
 
   const handleCalleChange = (event, newValue) => {
+    const value = newValue.CalleNombre || ""; // Si newValue es null, asignar cadena vacía
     setCalle(newValue);
     onParamsChange({
       departamento,
@@ -158,6 +160,13 @@ const FormHome = ({ onParamsChange, params }) => {
       calle: newValue,
       esquina: calleEsquina,
     });
+
+    // Habilitar/deshabilitar campos según si incluye "ruta" o "Ruta"
+    if (value?.toLowerCase().includes("ruta")) {
+      setIsKmEnabled(true);
+    } else {
+      setIsKmEnabled(false);
+    }
   };
 
   const handleNumeroPuertaChange = (event) => {
@@ -268,7 +277,7 @@ const FormHome = ({ onParamsChange, params }) => {
     />
   </Grid>
 
-  <Grid item xs={6} sm={3}>
+  <Grid item xs={4} sm={2}>
     <TextField
       label="Nro. de Puerta"
       variant="outlined"
@@ -276,8 +285,18 @@ const FormHome = ({ onParamsChange, params }) => {
       onChange={handleNumeroPuertaChange}
       fullWidth
       sx={textFieldStyles}
+      disabled={isKmEnabled}
     />
   </Grid>
+
+  <Grid item xs={4} sm={2}>
+    <TextField label="Apto." variant="outlined" fullWidth sx={textFieldStyles} disabled={isKmEnabled}/>
+  </Grid>
+
+  <Grid item xs={4} sm={2}>
+    <TextField label="Km" variant="outlined" fullWidth sx={textFieldStyles} disabled={!isKmEnabled}/>
+  </Grid>
+  
 
   {/* Segunda fila */}
   <Grid item xs={12} sm={6}>
@@ -313,23 +332,11 @@ const FormHome = ({ onParamsChange, params }) => {
     {/* Campos pequeños */}
     <Grid item xs={12} sm={6}>
       <Grid container spacing={3}>
-        <Grid item xs={3}>
-          <TextField label="Apto." variant="outlined" fullWidth sx={textFieldStyles} />
-        </Grid>
-        <Grid item xs={3}>
-          <TextField label="Km" variant="outlined" fullWidth sx={textFieldStyles} />
-        </Grid>
-        <Grid item xs={3}>
+        <Grid item xs={6}>
           <TextField label="Manzana" variant="outlined" fullWidth sx={textFieldStyles} />
         </Grid>
-        <Grid item xs={3}>
+        <Grid item xs={6}>
           <TextField label="Block/Solar" variant="outlined" fullWidth sx={textFieldStyles} />
-        </Grid>
-        <Grid item xs={3}>
-          <TextField label="Nivel" variant="outlined" fullWidth sx={textFieldStyles} />
-        </Grid>
-        <Grid item xs={3}>
-          <TextField label="Local" variant="outlined" fullWidth sx={textFieldStyles} />
         </Grid>
       </Grid>
     </Grid>
