@@ -304,7 +304,7 @@ const FormHome = ({ onParamsChange, params }) => {
       <Grid container spacing={3}>
       <Grid item xs={3}>
       <TextField
-      label="Número de Puerta"
+      label="Nro. Puerta"
       variant="outlined"
       value={numeroPuerta}
       onChange={handleNumeroPuertaChange}
