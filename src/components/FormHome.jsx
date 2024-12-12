@@ -351,7 +351,7 @@ const FormHome = ({ onParamsChange, params }) => {
         fullWidth
         sx={{
           ...textFieldStyles,
-          marginTop: '8px', // Espacio extra si es necesario
+          //marginTop: '8px', // Espacio extra si es necesario
         }}
       />
     </Grid>
