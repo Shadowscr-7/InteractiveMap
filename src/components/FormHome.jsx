@@ -196,7 +196,7 @@ const FormHome = ({ onParamsChange, params }) => {
     <>
       <Grid container spacing={3}>
         {/* Columna Izquierda */}
-        <Grid item xs={12} sm={6}>
+        <Grid item xs={6} sm={3}>
           {/* Combo Departamento */}
           <Autocomplete
             options={departamentos}
@@ -234,7 +234,7 @@ const FormHome = ({ onParamsChange, params }) => {
           />
         </Grid>
 
-        <Grid item xs={12} sm={6}>
+        <Grid item xs={6} sm={3}>
           {/* Combo Ciudad */}
           <Autocomplete
             options={ciudades}
@@ -284,7 +284,7 @@ const FormHome = ({ onParamsChange, params }) => {
           />
         </Grid>
 
-        <Grid item xs={12} sm={6}>
+        <Grid item xs={6} sm={3}>
           {/* Combo Calle */}
           <Autocomplete
             options={calles}
@@ -335,7 +335,7 @@ const FormHome = ({ onParamsChange, params }) => {
         </Grid>
 
         {/* Número de Puerta */}
-        <Grid item xs={12} sm={6}>
+        <Grid item xs={6} sm={3}>
           <TextField
             label="Número de Puerta"
             variant="outlined"
@@ -367,7 +367,7 @@ const FormHome = ({ onParamsChange, params }) => {
         </Grid>
 
         {/* Combo Calle Esquina */}
-        <Grid item xs={12} sm={6}>
+        <Grid item xs={6} sm={3}>
           <Autocomplete
             options={calles}
             getOptionLabel={(option) => option.CalleNombre}
@@ -416,7 +416,7 @@ const FormHome = ({ onParamsChange, params }) => {
           />
         </Grid>
         {/* Combo Calle Esquina */}
-        <Grid item xs={12} sm={6}>
+        <Grid item xs={6} sm={3}>
           <Autocomplete
             options={calles}
             getOptionLabel={(option) => option.CalleNombre}
@@ -465,7 +465,7 @@ const FormHome = ({ onParamsChange, params }) => {
           />
         </Grid>
         {/* Apartamento */}
-        <Grid item xs={6} sm={3}>
+        <Grid item xs={3} sm={1.5}>
           <TextField
             label="Número de Apto."
             variant="outlined"
@@ -494,7 +494,7 @@ const FormHome = ({ onParamsChange, params }) => {
           />
         </Grid>
         {/* Km */}
-        <Grid item xs={6} sm={3}>
+        <Grid item xs={3} sm={1.5}>
           <TextField
             label="Km"
             variant="outlined"
@@ -523,7 +523,7 @@ const FormHome = ({ onParamsChange, params }) => {
           />
         </Grid>
         {/* Nro Manz */}
-        <Grid item xs={6} sm={3}>
+        <Grid item xs={3} sm={1.5}>
           <TextField
             label="Número de Manzana"
             variant="outlined"
@@ -552,7 +552,7 @@ const FormHome = ({ onParamsChange, params }) => {
           />
         </Grid>
         {/* Block/Solar */}
-        <Grid item xs={6} sm={3}>
+        <Grid item xs={3} sm={1.5}>
           <TextField
             label="Block/Solar"
             variant="outlined"
@@ -581,7 +581,7 @@ const FormHome = ({ onParamsChange, params }) => {
           />
         </Grid>
         {/* Nivel */}
-        <Grid item xs={6} sm={3}>
+        <Grid item xs={3} sm={1.5}>
           <TextField
             label="Nivel"
             variant="outlined"
@@ -610,7 +610,7 @@ const FormHome = ({ onParamsChange, params }) => {
           />
         </Grid>
         {/* Local */}
-        <Grid item xs={6} sm={3}>
+        <Grid item xs={3} sm={1.5}>
           <TextField
             label="Local"
             variant="outlined"
