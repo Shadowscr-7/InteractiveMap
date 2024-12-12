@@ -213,6 +213,17 @@ const FormHome = ({ onParamsChange, params }) => {
     },
   };
   
+  const customPaperProps = {
+    paper: {
+      sx: {
+        minWidth: '300px', // Ancho mínimo
+        width: 'auto',     // Se ajusta al contenido
+        backgroundColor: "#ffffff", // Fondo blanco
+        boxShadow: 3,      // Sombras
+      },
+    },
+  };
+  
 
   return (
     <>
@@ -222,6 +233,9 @@ const FormHome = ({ onParamsChange, params }) => {
     <Autocomplete
       options={departamentos}
       getOptionLabel={(option) => option.DepartamentoNombre}
+      value={departamento}
+      componentsProps={customPaperProps}
+      onChange={handleDepartamentoChange}
       renderInput={(params) => (
         <TextField {...params} label="Departamento" variant="outlined" fullWidth sx={textFieldStyles} />
       )}
@@ -231,6 +245,9 @@ const FormHome = ({ onParamsChange, params }) => {
   <Grid item xs={6} sm={3}>
     <Autocomplete
       options={ciudades}
+      value={ciudad}
+      componentsProps={customPaperProps}
+      onChange={handleCiudadChange}
       getOptionLabel={(option) => option.CiudadNombre}
       renderInput={(params) => (
         <TextField {...params} label="Ciudad" variant="outlined" fullWidth sx={textFieldStyles} />
@@ -242,6 +259,9 @@ const FormHome = ({ onParamsChange, params }) => {
     <Autocomplete
       options={calles}
       getOptionLabel={(option) => option.CalleNombre}
+      value={calle}
+      componentsProps={customPaperProps}
+      onChange={handleCalleChange}
       renderInput={(params) => (
         <TextField {...params} label="Calle Principal" variant="outlined" fullWidth sx={textFieldStyles} />
       )}
@@ -252,6 +272,8 @@ const FormHome = ({ onParamsChange, params }) => {
     <TextField
       label="Número de Puerta"
       variant="outlined"
+      value={numeroPuerta}
+      onChange={handleNumeroPuertaChange}
       fullWidth
       sx={textFieldStyles}
     />
@@ -262,6 +284,9 @@ const FormHome = ({ onParamsChange, params }) => {
     <Autocomplete
       options={calles}
       getOptionLabel={(option) => option.CalleNombre}
+      value={calleEsquina}
+      componentsProps={customPaperProps}
+      onChange={handleCalleEsquinaChange}
       renderInput={(params) => (
         <TextField {...params} label="Esquina 1" variant="outlined" fullWidth sx={textFieldStyles} />
       )}
@@ -272,6 +297,9 @@ const FormHome = ({ onParamsChange, params }) => {
     <Autocomplete
       options={calles}
       getOptionLabel={(option) => option.CalleNombre}
+      value={calleEsquina}
+      componentsProps={customPaperProps}
+      onChange={handleCalleEsquinaChange}
       renderInput={(params) => (
         <TextField {...params} label="Esquina 2" variant="outlined" fullWidth sx={textFieldStyles} />
       )}
