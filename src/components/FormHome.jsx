@@ -312,13 +312,13 @@ const FormHome = ({ onParamsChange, params }) => {
     <Grid item xs={12} sm={6}>
       <Grid container spacing={2}>
         <Grid item xs={6}>
-          <TextField label="Número de Apto." variant="outlined" fullWidth sx={textFieldStyles} />
+          <TextField label="Apto." variant="outlined" fullWidth sx={textFieldStyles} />
         </Grid>
         <Grid item xs={6}>
           <TextField label="Km" variant="outlined" fullWidth sx={textFieldStyles} />
         </Grid>
         <Grid item xs={6}>
-          <TextField label="Número de Manzana" variant="outlined" fullWidth sx={textFieldStyles} />
+          <TextField label="Manzana" variant="outlined" fullWidth sx={textFieldStyles} />
         </Grid>
         <Grid item xs={6}>
           <TextField label="Block/Solar" variant="outlined" fullWidth sx={textFieldStyles} />
