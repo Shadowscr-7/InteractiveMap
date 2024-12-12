@@ -229,7 +229,7 @@ const FormHome = ({ onParamsChange, params }) => {
     <>
       <Grid container spacing={3} alignItems="flex-start">
   {/* Primera fila */}
-  <Grid item xs={6} sm={3}>
+  <Grid item xs={12} sm={6}>
     <Autocomplete
       options={departamentos}
       getOptionLabel={(option) => option.DepartamentoNombre}
@@ -242,7 +242,7 @@ const FormHome = ({ onParamsChange, params }) => {
     />
   </Grid>
 
-  <Grid item xs={6} sm={3}>
+  <Grid item xs={12} sm={6}>
     <Autocomplete
       options={ciudades}
       value={ciudad}
@@ -268,7 +268,16 @@ const FormHome = ({ onParamsChange, params }) => {
     />
   </Grid>
 
-  
+  <Grid item xs={6} sm={3}>
+    <TextField
+      label="Nro. de Puerta"
+      variant="outlined"
+      value={numeroPuerta}
+      onChange={handleNumeroPuertaChange}
+      fullWidth
+      sx={textFieldStyles}
+    />
+  </Grid>
 
   {/* Segunda fila */}
   <Grid item xs={12} sm={6}>
@@ -297,21 +306,13 @@ const FormHome = ({ onParamsChange, params }) => {
     />
   </Grid>
 
+  
+
   {/* Contenedor de campos pequeños y Observación */}
   <Grid container item spacing={3} alignItems="flex-start">
     {/* Campos pequeños */}
     <Grid item xs={12} sm={6}>
       <Grid container spacing={3}>
-      <Grid item xs={3}>
-      <TextField
-      label="Nro. Puerta"
-      variant="outlined"
-      value={numeroPuerta}
-      onChange={handleNumeroPuertaChange}
-      fullWidth
-      sx={textFieldStyles}
-    />
-      </Grid>
         <Grid item xs={3}>
           <TextField label="Apto." variant="outlined" fullWidth sx={textFieldStyles} />
         </Grid>

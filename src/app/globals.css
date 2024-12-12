@@ -46,3 +46,8 @@
   border-radius: 8px; /* Bordes redondeados para un diseño más moderno */
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Sombras para dar profundidad */
 }
+
+/* Oculta el overlay de indicadores de Next.js */
+[data-nextjs-status-indicator] {
+  display: none !important;
+}

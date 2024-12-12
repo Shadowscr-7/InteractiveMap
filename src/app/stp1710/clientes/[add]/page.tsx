@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Grid, Box, Typography, Paper } from "@mui/material";
 import FormHome from "../../../../components/FormHome";
 import MapCompleto from "../../../../components/mapCompleto";
@@ -18,7 +18,6 @@ const AddCliente = () => {
 
   const handleParamsChange = (updatedParams: any) => {
     setParams((prev) => {
-      // Extraemos los valores de los parámetros que se desean actualizar
       const newParams = { ...prev, ...updatedParams };
 
       // Aseguramos que los valores sean cadenas vacías si están nulos o indefinidos
@@ -33,47 +32,60 @@ const AddCliente = () => {
       newParams.numero = updatedParams.numero ?? newParams.numero ?? "";
       newParams.esquina = updatedParams.esquina ?? newParams.esquina ?? "";
 
-      console.log("Parametros actualizados:", newParams); // Verifica si los parámetros están siendo actualizados correctamente
+      console.log("Parametros actualizados:", newParams);
       return newParams;
     });
   };
 
+  // Hook para eliminar el indicador de "Static route"
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      const staticRouteIndicator = document.querySelector(
+        '[data-nextjs-status-indicator]'
+      );
+      if (staticRouteIndicator) {
+        staticRouteIndicator.remove();
+      }
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    // Cleanup del observer
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <Box
-  sx={{
-    backgroundColor: "#263238",
-    padding: 3,
-    height: "100vh", // Asegura que ocupe toda la altura de la pantalla
-  }}
->
-  {/* Contenido Principal */}
-  <Grid container spacing={2} sx={{ height: "100%" }}>
-    {/* Sección del Formulario */}
-    <Grid item xs={12} md={9}>
-      <div>
-        <FormHome onParamsChange={handleParamsChange} params={params} />
-      </div>
-    </Grid>
+      sx={{
+        backgroundColor: "#263238",
+        padding: 3,
+        height: "100vh",
+      }}
+    >
+      {/* Contenido Principal */}
+      <Grid container spacing={2} sx={{ height: "100%" }}>
+        {/* Sección del Formulario */}
+        <Grid item xs={12} md={9}>
+          <div>
+            <FormHome onParamsChange={handleParamsChange} params={params} />
+          </div>
+        </Grid>
 
-    {/* Sección del Mapa */}
-    <Grid item xs={12} md={3}>
-      <div style={{ height: "100%" }}>
-        <MapCompleto
-          params={params}
-          onParamsUpdate={handleParamsChange}
-        >
-          <StreetRenderer
-            map={undefined}
-            params={undefined}
-            isMapReady={undefined}
-            setLastCoordinates={undefined}
-          />
-        </MapCompleto>
-      </div>
-    </Grid>
-  </Grid>
-</Box>
-
+        {/* Sección del Mapa */}
+        <Grid item xs={12} md={3}>
+          <div style={{ height: "100%" }}>
+            <MapCompleto params={params} onParamsUpdate={handleParamsChange}>
+              <StreetRenderer
+                map={undefined}
+                params={undefined}
+                isMapReady={undefined}
+                setLastCoordinates={undefined}
+              />
+            </MapCompleto>
+          </div>
+        </Grid>
+      </Grid>
+    </Box>
   );
 };
 
