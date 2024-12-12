@@ -268,16 +268,7 @@ const FormHome = ({ onParamsChange, params }) => {
     />
   </Grid>
 
-  <Grid item xs={6} sm={3}>
-    <TextField
-      label="Número de Puerta"
-      variant="outlined"
-      value={numeroPuerta}
-      onChange={handleNumeroPuertaChange}
-      fullWidth
-      sx={textFieldStyles}
-    />
-  </Grid>
+  
 
   {/* Segunda fila */}
   <Grid item xs={12} sm={6}>
@@ -303,6 +294,17 @@ const FormHome = ({ onParamsChange, params }) => {
       renderInput={(params) => (
         <TextField {...params} label="Esquina 2" variant="outlined" fullWidth sx={textFieldStyles} />
       )}
+    />
+  </Grid>
+
+  <Grid item xs={6} sm={3}>
+    <TextField
+      label="Número de Puerta"
+      variant="outlined"
+      value={numeroPuerta}
+      onChange={handleNumeroPuertaChange}
+      fullWidth
+      sx={textFieldStyles}
     />
   </Grid>
 
@@ -338,7 +340,7 @@ const FormHome = ({ onParamsChange, params }) => {
         label="Observación"
         variant="outlined"
         multiline
-        rows={5}
+        rows={4}
         fullWidth
         sx={{
           ...textFieldStyles,
