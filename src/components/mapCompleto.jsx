@@ -462,7 +462,6 @@ const openPopup = () => setIsPopupOpen(true);
         position: "relative",
         width: "100%",
         height: "360px", 
-        marginLeft: "2%",
       }}
     >
       <div id="map" style={{ width: "100%", height: "100%" }} />
