@@ -100,6 +100,19 @@ const FormHome = ({ onParamsChange, params }) => {
     }
   }, [departamento]);
 
+  useEffect(() => {
+    const getCookie = (name) => {
+      const matches = document.cookie.match(
+        new RegExp("(?:^|; )" + name + "=([^;]*)")
+      );
+      return matches ? decodeURIComponent(matches[1]) : null;
+    };
+  
+    const usuario = getCookie("Usuario");
+    console.log("Valor de la cookie Usuario:", usuario);
+  }, []);
+  
+
   // Obtener calles al seleccionar un departamento y ciudad
   useEffect(() => {
     if (departamento) {
@@ -175,7 +188,7 @@ const FormHome = ({ onParamsChange, params }) => {
     onParamsChange({ departamento, ciudad, calle, numero: value });
   };
 
-  const handleCalleEsquinaChange = (event, newValue) => {
+  /*const handleCalleEsquinaChange = (event, newValue) => {
     console.log("Nuevo valor de calle esquina seleccionado:", newValue);
 
     setCalleEsquina(newValue);
@@ -199,7 +212,7 @@ const FormHome = ({ onParamsChange, params }) => {
     );
 
     onParamsChange(updatedParams);
-  };
+  };*/
 
   const textFieldStyles = {
     "& .MuiOutlinedInput-root": {
