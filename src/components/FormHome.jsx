@@ -318,7 +318,7 @@ const FormHome = ({ onParamsChange, params }) => {
       getOptionLabel={(option) => option.CalleNombre}
       value={calleEsquina}
       componentsProps={customPaperProps}
-      onChange={handleCalleEsquinaChange}
+      //onChange={handleCalleEsquinaChange}
       renderInput={(params) => (
         <TextField {...params} label="Esquina 1" variant="outlined" fullWidth sx={textFieldStyles} />
       )}
