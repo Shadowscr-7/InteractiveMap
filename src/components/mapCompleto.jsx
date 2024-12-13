@@ -12,6 +12,7 @@ import Feature from "ol/Feature";
 import Point from "ol/geom/Point";
 import { Icon, Style } from "ol/style";
 import { fetchPOIs } from "../services/services";
+import { defaults as defaultControls } from "ol/control";
 
 const MapCompleto = ({ params, children, onParamsUpdate }) => {
   const mapRef = useRef(null);
@@ -390,6 +391,7 @@ const MapCompleto = ({ params, children, onParamsUpdate }) => {
           center: fromLonLat(lastCoordinates),
           zoom: 5,
         }),
+        controls: defaultControls({ zoom: false }), // Desactiva los botones de zoom
       });
 
       // Eventos del mapa
@@ -459,7 +461,8 @@ const openPopup = () => setIsPopupOpen(true);
       style={{
         position: "relative",
         width: "100%",
-        height: "360px", // Alto fijo del mapa
+        height: "360px", 
+        marginLeft: "2%",
       }}
     >
       <div id="map" style={{ width: "100%", height: "100%" }} />

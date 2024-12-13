@@ -80,3 +80,27 @@
     opacity: 0;
   }
 }
+.custom-resizer:hover {
+  background: linear-gradient(to right, #ddd, #bbb);
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.custom-resizer {
+  position: relative;
+}
+.custom-resizer::before {
+  content: "⇔"; /* Ícono de doble flecha */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 16px;
+  color: #666;
+  transition: color 0.3s ease;
+}
+.custom-resizer:hover::before {
+  color: #007bff; /* Color azul al hacer hover */
+}
+
+

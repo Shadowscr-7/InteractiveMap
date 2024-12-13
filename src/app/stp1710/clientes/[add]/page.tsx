@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Grid, Box, Typography, Paper } from "@mui/material";
+import React, { useState } from "react";
+import { Box, IconButton } from "@mui/material";
 import FormHome from "../../../../components/FormHome";
 import MapCompleto from "../../../../components/mapCompleto";
 import StreetRenderer from "../../../../components/streetRenderer";
+import FullscreenIcon from "@mui/icons-material/Fullscreen";
+import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 
 const AddCliente = () => {
   const [params, setParams] = useState({
@@ -15,72 +17,59 @@ const AddCliente = () => {
     numero: "",
     esquina: "",
   });
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const handleParamsChange = (updatedParams: any) => {
-    setParams((prev) => {
-      const newParams = { ...prev, ...updatedParams };
-
-      // Aseguramos que los valores sean cadenas vacías si están nulos o indefinidos
-      newParams.departamento =
-        updatedParams.departamento?.DepartamentoNombre ??
-        newParams.departamento ??
-        "";
-      newParams.ciudad =
-        updatedParams.ciudad?.CiudadNombre ?? newParams.ciudad ?? "";
-      newParams.calle =
-        updatedParams.calle?.CalleNombre ?? newParams.calle ?? "";
-      newParams.numero = updatedParams.numero ?? newParams.numero ?? "";
-      newParams.esquina = updatedParams.esquina ?? newParams.esquina ?? "";
-
-      console.log("Parametros actualizados:", newParams);
-      return newParams;
-    });
+    setParams((prev) => ({ ...prev, ...updatedParams }));
   };
 
-  // Hook para eliminar el indicador de "Static route"
-  useEffect(() => {
-    const observer = new MutationObserver(() => {
-      const staticRouteIndicator = document.querySelector(
-        '[data-nextjs-status-indicator]'
-      );
-      if (staticRouteIndicator) {
-        staticRouteIndicator.remove();
-      }
-    });
-
-    observer.observe(document.body, { childList: true, subtree: true });
-
-    // Cleanup del observer
-    return () => observer.disconnect();
-  }, []);
+  const toggleMapSize = () => {
+    setIsExpanded((prev) => !prev);
+  };
 
   return (
-    <Box
-      sx={{
-        backgroundColor: "#263238",
-        padding: 3,
-        height: "100vh",
-      }}
-    >
-      {/* Contenido Principal */}
-      <Grid container spacing={2} sx={{ height: "100%" }}>
-        {/* Sección del Formulario */}
-        <Grid item xs={12} md={9}>
-          <div>
-            <FormHome onParamsChange={handleParamsChange} params={params} />
-          </div>
-        </Grid>
+    <Box sx={{ display: "flex", height: "100vh" }}>
+      {/* Panel Izquierdo - Formulario */}
+      {!isExpanded && (
+        <Box
+          sx={{
+            width: "70%",
+            backgroundColor: "#263238",
+            padding: 3,
+            overflowY: "auto",
+          }}
+        >
+          <FormHome onParamsChange={handleParamsChange} params={params} />
+        </Box>
+      )}
 
-        {/* Sección del Mapa */}
-        <Grid item xs={12} md={3}>
-          <div style={{ height: "100%" }}>
-          <MapCompleto params={params} onParamsUpdate={handleParamsChange}>
-            <StreetRenderer /> 
-          </MapCompleto>
+      {/* Panel Derecho - Mapa */}
+      <Box
+        sx={{
+          flex: isExpanded ? 1 : "30%",
+          position: "relative",
+          backgroundColor: "#263238",
+        }}
+      >
+        <MapCompleto params={params} onParamsUpdate={handleParamsChange}>
+          <StreetRenderer />
+        </MapCompleto>
 
-          </div>
-        </Grid>
-      </Grid>
+        {/* Botón de Expansión */}
+        <IconButton
+          onClick={toggleMapSize}
+          sx={{
+            position: "absolute",
+            top: 10,
+            left: 10,
+            backgroundColor: "#fff",
+            boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
+            "&:hover": { backgroundColor: "#f0f0f0" },
+          }}
+        >
+          {isExpanded ? <FullscreenExitIcon /> : <FullscreenIcon />}
+        </IconButton>
+      </Box>
     </Box>
   );
 };
