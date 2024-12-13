@@ -25,6 +25,9 @@ const MapCompleto = ({ params, children, onParamsUpdate }) => {
   const markerSource = useRef(new VectorSource()); // Fuente para los marcadores de clic
   const [isPopupOpen, setIsPopupOpen] = useState(false); // Estado para el popup
   const [inputValue, setInputValue] = useState(""); // Estado para el cuadro de texto
+  const [isPopupButtonActive, setIsPopupButtonActive] = useState(false); //Estado del boton popup
+  const popupButtonRef = useRef(isPopupButtonActive); // Crear la referencia
+
   const markerLayer = useRef(
     new VectorLayer({
       source: markerSource.current,
@@ -55,140 +58,154 @@ const MapCompleto = ({ params, children, onParamsUpdate }) => {
   };
 
   const handleMapClick = async (event) => {
-    if (!mapRef.current) return;
+    try {
+      setIsLoading(true); // Mostrar el loading al inicio
+      
+      if (popupButtonRef.current) {
+        openPopup(); // Abre el popup
+      } else {
+        console.log("No abrir");
+      }
 
-    const coordinate = toLonLat(event.coordinate);
-    console.log("Clicked coordinates:", coordinate);
+      if (!mapRef.current) return;
 
-    const [lon, lat] = coordinate;
-    const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&addressdetails=1`;
+      const coordinate = toLonLat(event.coordinate);
+      console.log("Clicked coordinates:", coordinate);
 
-    const fetchNearbyStreets = async (lat, lon, roadName) => {
-      const overpassQuery = `
-        [out:json];
-        node(around:50,${lat},${lon})["highway"];
-        way(bn)["highway"];
-        out body;
-      `;
+      const [lon, lat] = coordinate;
+      const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&addressdetails=1`;
 
-      try {
-        const response = await fetch(
-          "https://overpass-api.de/api/interpreter",
-          {
-            method: "POST",
-            body: overpassQuery,
-            headers: { "Content-Type": "text/plain" },
-          },
-        );
-        if (!response.ok) throw new Error("Error fetching Overpass data.");
-        const overpassData = await response.json();
-        const ways = overpassData.elements;
+      const fetchNearbyStreets = async (lat, lon, roadName) => {
+        const overpassQuery = `
+          [out:json];
+          node(around:50,${lat},${lon})["highway"];
+          way(bn)["highway"];
+          out body;
+        `;
 
-        // Filtrar calles para encontrar intersecciones
-        const mainStreet = ways.find(
-          (way) => way.tags && way.tags.name === roadName,
-        );
-        if (!mainStreet) {
-          console.warn("Main street not found in Overpass data.");
+        try {
+          const response = await fetch(
+            "https://overpass-api.de/api/interpreter",
+            {
+              method: "POST",
+              body: overpassQuery,
+              headers: { "Content-Type": "text/plain" },
+            },
+          );
+          if (!response.ok) throw new Error("Error fetching Overpass data.");
+          const overpassData = await response.json();
+          const ways = overpassData.elements;
+
+          // Filtrar calles para encontrar intersecciones
+          const mainStreet = ways.find(
+            (way) => way.tags && way.tags.name === roadName,
+          );
+          if (!mainStreet) {
+            console.warn("Main street not found in Overpass data.");
+            return [];
+          }
+
+          const mainStreetNodes = new Set(mainStreet.nodes);
+          const intersectingStreets = ways.filter((way) => {
+            if (!way.tags || !way.tags.name || way.tags.name === roadName)
+              return false;
+            return way.nodes.some((node) => mainStreetNodes.has(node));
+          });
+
+          return intersectingStreets.map((way) => way.tags.name);
+        } catch (error) {
+          console.error("Error fetching nearby streets:", error);
           return [];
         }
-
-        const mainStreetNodes = new Set(mainStreet.nodes);
-        const intersectingStreets = ways.filter((way) => {
-          if (!way.tags || !way.tags.name || way.tags.name === roadName)
-            return false;
-          return way.nodes.some((node) => mainStreetNodes.has(node));
-        });
-
-        return intersectingStreets.map((way) => way.tags.name);
-      } catch (error) {
-        console.error("Error fetching nearby streets:", error);
-        return [];
-      }
-    };
-
-    try {
-      // Geocodificación inversa con Nominatim
-      const response = await fetch(nominatimUrl);
-      if (!response.ok)
-        throw new Error("Error fetching reverse geocoding data.");
-
-      const data = await response.json();
-      console.log("Reverse geocoding result:", data);
-
-      const { address } = data;
-
-      // Actualiza los parámetros con la nueva dirección
-      const updatedParams = {
-        pais: address?.country || "",
-        departamento: address?.state || "",
-        ciudad: address?.city || address?.town || address?.village || "",
-        calle: address?.road || "",
-        numero: address?.house_number || "",
-        esquina: "",
       };
 
-      console.log("Updated parameters:", updatedParams);
+      try {
+        // Geocodificación inversa con Nominatim
+        const response = await fetch(nominatimUrl);
+        if (!response.ok)
+          throw new Error("Error fetching reverse geocoding data.");
 
-      // Consulta adicional a Overpass para las esquinas
-      if (updatedParams.calle) {
-        const nearbyStreets = await fetchNearbyStreets(
-          lat,
-          lon,
-          updatedParams.calle,
-        );
-        if (nearbyStreets.length > 0) {
-          console.log("Esquinas encontradas:", nearbyStreets);
-          updatedParams.esquina = nearbyStreets[0];
-        } else {
-          console.log("No se encontraron esquinas cercanas.");
+        const data = await response.json();
+        console.log("Reverse geocoding result:", data);
+
+        const { address } = data;
+
+        // Actualiza los parámetros con la nueva dirección
+        const updatedParams = {
+          pais: address?.country || "",
+          departamento: address?.state || "",
+          ciudad: address?.city || address?.town || address?.village || "",
+          calle: address?.road || "",
+          numero: address?.house_number || "",
+          esquina: "",
+        };
+
+        console.log("Updated parameters:", updatedParams);
+
+        // Consulta adicional a Overpass para las esquinas
+        if (updatedParams.calle) {
+          const nearbyStreets = await fetchNearbyStreets(
+            lat,
+            lon,
+            updatedParams.calle,
+          );
+          if (nearbyStreets.length > 0) {
+            console.log("Esquinas encontradas:", nearbyStreets);
+            updatedParams.esquina = nearbyStreets[0];
+          } else {
+            console.log("No se encontraron esquinas cercanas.");
+          }
         }
-      }
 
-      console.log("Final updated parameters:", updatedParams);
+        console.log("Final updated parameters:", updatedParams);
 
-      // Elimina los puntos del mapa que correspondan a la dirección anterior
-      markerSource.current.clear(); // Limpia todos los marcadores previos
-      console.log("Cleared previous markers.");
+        // Elimina los puntos del mapa que correspondan a la dirección anterior
+        markerSource.current.clear(); // Limpia todos los marcadores previos
+        console.log("Cleared previous markers.");
 
-      // Añade marcador en la ubicación clickeada
-      const marker = new Feature({
-        geometry: new Point(fromLonLat([lon, lat])),
-      });
-      marker.setStyle(
-        new Style({
-          image: new Icon({
-            anchor: [0.5, 1],
-            src:
-              "data:image/svg+xml;charset=utf-8," +
-              encodeURIComponent(`
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="red" stroke="black" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-map-pin">
-                <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"></path>
-                <circle cx="12" cy="10" r="3"></circle>
-              </svg>
-            `),
-            scale: 1,
+        // Añade marcador en la ubicación clickeada
+        const marker = new Feature({
+          geometry: new Point(fromLonLat([lon, lat])),
+        });
+        marker.setStyle(
+          new Style({
+            image: new Icon({
+              anchor: [0.5, 1],
+              src:
+                "data:image/svg+xml;charset=utf-8," +
+                encodeURIComponent(`
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="red" stroke="black" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-map-pin">
+                  <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"></path>
+                  <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+              `),
+              scale: 1,
+            }),
           }),
-        }),
-      );
+        );
 
-      markerSource.current.addFeature(marker);
-      console.log("Added marker to markerSource:", marker);
+        markerSource.current.addFeature(marker);
+        console.log("Added marker to markerSource:", marker);
 
-      // Centrar el mapa en el lugar del clic
-      mapRef.current.getView().setCenter(fromLonLat([lon, lat]));
-      mapRef.current.getView().setZoom(15);
-      console.log("Map centered on marker.");
+        // Centrar el mapa en el lugar del clic
+        mapRef.current.getView().setCenter(fromLonLat([lon, lat]));
+        mapRef.current.getView().setZoom(15);
+        console.log("Map centered on marker.");
 
-      // Llama al callback con los parámetros actualizados
-      if (onParamsUpdate) {
-        onParamsUpdate(updatedParams);
+        // Llama al callback con los parámetros actualizados
+        if (onParamsUpdate) {
+          onParamsUpdate(updatedParams);
+        }
+      } catch (error) {
+        console.error(
+          "Error in reverse geocoding or fetching nearby streets:",
+          error,
+        );
       }
     } catch (error) {
-      console.error(
-        "Error in reverse geocoding or fetching nearby streets:",
-        error,
-      );
+      console.error("Error en handleMapClick:", error);
+    } finally {
+      setIsLoading(false); // Ocultar el loading al final
     }
   };
 
@@ -314,6 +331,7 @@ const MapCompleto = ({ params, children, onParamsUpdate }) => {
   };
 
   useEffect(() => {
+    setIsLoading(true); // Mostrar el loading al inicio
     const fetchCoordinates = async () => {
       if (departamento || ciudad) {
         const query = `${ciudad || ""}, ${departamento || ""}, ${pais || ""}`;
@@ -345,7 +363,12 @@ const MapCompleto = ({ params, children, onParamsUpdate }) => {
     };
 
     fetchCoordinates();
+    setIsLoading(false); // Mostrar el loading al inicio
   }, [departamento, ciudad, pais]); // Escucha cambios en `departamento`, `ciudad` o `pais`
+
+  useEffect(() => {
+    popupButtonRef.current = isPopupButtonActive;
+  }, [isPopupButtonActive]);
 
   useEffect(() => {
     if (!mapRef.current) {
@@ -493,24 +516,24 @@ const openPopup = () => setIsPopupOpen(true);
 
           {/* Botón de abrir popup */}
           <div
-            onClick={openPopup}
+            onClick={() => setIsPopupButtonActive((prev) => !prev)} // Cambia el estado
             style={{
-              position: "absolute", // Misma posición que el botón de centrado
-              top: "60px", // Ajustar la distancia vertical
               width: "40px",
               height: "40px",
               borderRadius: "50%",
-              backgroundColor: "#007bff",
+              backgroundColor: isPopupButtonActive ? "#28a745" : "#007bff", // Verde si está activo
               color: "#fff",
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
               cursor: "pointer",
               boxShadow: "0 2px 5px rgba(0, 0, 0, 0.3)",
+              zIndex: 1000,
             }}
           >
             <span style={{ fontSize: "18px" }}>✍️</span>
-          </div>
+          </div>;
+
         </div>
       )}
 
@@ -599,6 +622,7 @@ const openPopup = () => setIsPopupOpen(true);
             justifyContent: "center",
             alignItems: "center",
             zIndex: 2000,
+            animation: "fadeIn 0.3s ease", // Animación de entrada
           }}
         >
           <div
@@ -611,9 +635,11 @@ const openPopup = () => setIsPopupOpen(true);
               display: "flex",
               flexDirection: "column",
               gap: "10px",
+              transform: "translateY(0)",
+              animation: "slideUp 0.3s ease", // Animación de deslizamiento
             }}
           >
-            <h3 style={{ margin: 0 }}>Nombre del Pto de Interés.</h3>
+            <h3 style={{ margin: 0 }}>Escribe algo</h3>
             <input
               type="text"
               value={inputValue}
@@ -720,6 +746,7 @@ const openPopup = () => setIsPopupOpen(true);
             setErrorMessage,
             setLastCoordinates,
             params: { pais, departamento, ciudad, calle, numero, esquina },
+            onParamsUpdate: onParamsUpdate,
           }),
         )}
     </div>

@@ -9,16 +9,26 @@ import { fromLonLat, toLonLat, transformExtent } from "ol/proj";
 import { useEffect, useRef } from "react";
 import { getPtoInteres } from "../services/services";
 
-const StreetRenderer = ({ map, params, isMapReady, setLastCoordinates }) => {
+const StreetRenderer = ({
+  map, 
+  params, 
+  isMapReady, 
+  setIsLoading, // Agrega esta línea
+  setLastCoordinates, 
+  onParamsUpdate 
+}) => {
   const { departamento, calle, pais, numero, esquina, ciudad } = params;
   const streetSource = useRef(new VectorSource()); // Persistencia de la fuente para los datos de la calle
   const markerSource = useRef(new VectorSource()); // Fuente para los marcadores
+
+
 
   useEffect(() => {
     if (!map || !isMapReady) {
       console.debug("Map or isMapReady is not ready yet. Skipping rendering.");
       return; // Detener ejecución si el mapa no está listo
     }
+    setIsLoading(true); // Mostrar el cargando
 
     // Limpieza inicial de ambas capas antes de cualquier acción
     console.log("Limpiando capas de calle y marcadores...");
@@ -158,7 +168,7 @@ const StreetRenderer = ({ map, params, isMapReady, setLastCoordinates }) => {
       
                 console.log("Marker rendered at:", { lon, lat });
       
-                if (esquina) {
+                if (onParamsUpdate && esquina) {
                   onParamsUpdate({ esquina });
                   console.log("Updated esquina parameter:", esquina);
                 }
@@ -299,10 +309,12 @@ const StreetRenderer = ({ map, params, isMapReady, setLastCoordinates }) => {
     } else {
       fetchStreetData();
     }
+    setIsLoading(false); // Mostrar el cargando
   }, [map, isMapReady, departamento, calle, pais, numero, esquina, ciudad]);
 
   useEffect(() => {
     console.log("Adding street and marker layers...");
+    setIsLoading(true); // Mostrar el cargando
     const streetLayer = new VectorLayer({
       source: streetSource.current,
     });
@@ -313,11 +325,13 @@ const StreetRenderer = ({ map, params, isMapReady, setLastCoordinates }) => {
     map.addLayer(streetLayer);
     map.addLayer(markerLayer);
 
+    setIsLoading(false);
     return () => {
       console.log("Removing street and marker layers...");
       map.removeLayer(streetLayer);
       map.removeLayer(markerLayer);
     };
+    
   }, [map]);
 
   return null;

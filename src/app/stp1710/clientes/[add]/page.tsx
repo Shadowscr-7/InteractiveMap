@@ -74,14 +74,10 @@ const AddCliente = () => {
         {/* Sección del Mapa */}
         <Grid item xs={12} md={3}>
           <div style={{ height: "100%" }}>
-            <MapCompleto params={params} onParamsUpdate={handleParamsChange}>
-              <StreetRenderer
-                map={undefined}
-                params={undefined}
-                isMapReady={undefined}
-                setLastCoordinates={undefined}
-              />
-            </MapCompleto>
+          <MapCompleto params={params} onParamsUpdate={handleParamsChange}>
+            <StreetRenderer /> 
+          </MapCompleto>
+
           </div>
         </Grid>
       </Grid>
