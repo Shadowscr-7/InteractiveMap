@@ -523,7 +523,7 @@ const openPopup = () => setIsPopupOpen(true);
               width: "40px",
               height: "40px",
               borderRadius: "50%",
-              backgroundColor: isPopupButtonActive ? "#28a745" : "#007bff", // Verde si está activo
+              backgroundColor: isPopupButtonActive ? "#dc3545" : "#007bff", // Verde si está activo
               color: "#fff",
               display: "flex",
               justifyContent: "center",
