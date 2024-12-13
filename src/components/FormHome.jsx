@@ -103,14 +103,15 @@ const FormHome = ({ onParamsChange, params }) => {
   useEffect(() => {
     const getCookie = (name) => {
       const matches = document.cookie.match(
-        new RegExp("(?:^|; )" + name + "=([^;]*)"),
+        new RegExp("(?:^|; )" + name + "=([^;]*)")
       );
       return matches ? decodeURIComponent(matches[1]) : null;
     };
-
+  
     const usuario = getCookie("Usuario");
     console.log("Valor de la cookie Usuario:", usuario);
   }, []);
+  
 
   // Obtener calles al seleccionar un departamento y ciudad
   useEffect(() => {
@@ -187,32 +188,6 @@ const FormHome = ({ onParamsChange, params }) => {
     onParamsChange({ departamento, ciudad, calle, numero: value });
   };
 
-  /*const handleCalleEsquinaChange = (event, newValue) => {
-    console.log("Nuevo valor de calle esquina seleccionado:", newValue);
-
-    setCalleEsquina(newValue);
-
-    // Verifica si número es vacío y lo ajusta a ""
-    const updatedNumero = numero || "";
-    console.log("Valor actualizado de numero:", updatedNumero);
-
-    // Actualiza los parámetros con el valor correcto
-    const updatedParams = {
-      departamento,
-      ciudad,
-      calle,
-      numero: updatedNumero,
-      esquina: newValue.CalleNombre,
-    };
-
-    console.log(
-      "Parámetros actualizados enviados a onParamsChange:",
-      updatedParams,
-    );
-
-    onParamsChange(updatedParams);
-  };*/
-
   const textFieldStyles = {
     "& .MuiOutlinedInput-root": {
       color: "#ffffff", // Color del texto
@@ -233,190 +208,142 @@ const FormHome = ({ onParamsChange, params }) => {
       color: "#ffffff", // Label blanco al enfocar
     },
   };
-
+  
   const customPaperProps = {
     paper: {
       sx: {
-        minWidth: "300px", // Ancho mínimo
-        width: "auto", // Se ajusta al contenido
+        minWidth: '300px', // Ancho mínimo
+        width: 'auto',     // Se ajusta al contenido
         backgroundColor: "#ffffff", // Fondo blanco
-        boxShadow: 3, // Sombras
+        boxShadow: 3,      // Sombras
       },
     },
   };
+  
 
   return (
     <>
       <Grid container spacing={3} alignItems="flex-start">
-        {/* Primera fila */}
-        <Grid item xs={12} sm={6}>
-          <Autocomplete
-            options={departamentos}
-            getOptionLabel={(option) => option.DepartamentoNombre}
-            value={departamento}
-            componentsProps={customPaperProps}
-            onChange={handleDepartamentoChange}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Departamento"
-                variant="outlined"
-                fullWidth
-                sx={textFieldStyles}
-              />
-            )}
-          />
+  {/* Primera fila */}
+  <Grid item xs={12} sm={6}>
+    <Autocomplete
+      options={departamentos}
+      getOptionLabel={(option) => option.DepartamentoNombre}
+      value={departamento}
+      componentsProps={customPaperProps}
+      onChange={handleDepartamentoChange}
+      renderInput={(params) => (
+        <TextField {...params} label="Departamento" variant="outlined" fullWidth sx={textFieldStyles} />
+      )}
+    />
+  </Grid>
+
+  <Grid item xs={12} sm={6}>
+    <Autocomplete
+      options={ciudades}
+      value={ciudad}
+      componentsProps={customPaperProps}
+      onChange={handleCiudadChange}
+      getOptionLabel={(option) => option.CiudadNombre}
+      renderInput={(params) => (
+        <TextField {...params} label="Ciudad" variant="outlined" fullWidth sx={textFieldStyles} />
+      )}
+    />
+  </Grid>
+
+  <Grid item xs={12} sm={6}>
+    <Autocomplete
+      options={calles}
+      getOptionLabel={(option) => option.CalleNombre}
+      value={calle}
+      componentsProps={customPaperProps}
+      onChange={handleCalleChange}
+      renderInput={(params) => (
+        <TextField {...params} label="Calle Principal" variant="outlined" fullWidth sx={textFieldStyles} />
+      )}
+    />
+  </Grid>
+
+  <Grid item xs={4} sm={2}>
+    <TextField
+      label="Nro. de Puerta"
+      variant="outlined"
+      value={numeroPuerta}
+      onChange={handleNumeroPuertaChange}
+      fullWidth
+      sx={textFieldStyles}
+      disabled={isKmEnabled}
+    />
+  </Grid>
+
+  <Grid item xs={4} sm={2}>
+    <TextField label="Apto." variant="outlined" fullWidth sx={textFieldStyles} disabled={isKmEnabled}/>
+  </Grid>
+
+  <Grid item xs={4} sm={2}>
+    <TextField label="Km" variant="outlined" fullWidth sx={textFieldStyles} disabled={!isKmEnabled}/>
+  </Grid>
+  
+
+  {/* Segunda fila */}
+  <Grid item xs={12} sm={6}>
+    <Autocomplete
+      options={calles}
+      getOptionLabel={(option) => option.CalleNombre}
+      value={calleEsquina}
+      componentsProps={customPaperProps}
+      renderInput={(params) => (
+        <TextField {...params} label="Esquina 1" variant="outlined" fullWidth sx={textFieldStyles} />
+      )}
+    />
+  </Grid>
+
+  <Grid item xs={12} sm={6}>
+    <Autocomplete
+      options={calles}
+      getOptionLabel={(option) => option.CalleNombre}
+      value={calleEsquina}
+      componentsProps={customPaperProps}
+      renderInput={(params) => (
+        <TextField {...params} label="Esquina 2" variant="outlined" fullWidth sx={textFieldStyles} />
+      )}
+    />
+  </Grid>
+
+  
+
+  {/* Contenedor de campos pequeños y Observación */}
+  <Grid container item spacing={3} alignItems="flex-start">
+    {/* Campos pequeños */}
+    <Grid item xs={12} sm={6}>
+      <Grid container spacing={3}>
+        <Grid item xs={6}>
+          <TextField label="Manzana" variant="outlined" fullWidth sx={textFieldStyles} />
         </Grid>
-
-        <Grid item xs={12} sm={6}>
-          <Autocomplete
-            options={ciudades}
-            value={ciudad}
-            componentsProps={customPaperProps}
-            onChange={handleCiudadChange}
-            getOptionLabel={(option) => option.CiudadNombre}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Ciudad"
-                variant="outlined"
-                fullWidth
-                sx={textFieldStyles}
-              />
-            )}
-          />
-        </Grid>
-
-        <Grid item xs={12} sm={6}>
-          <Autocomplete
-            options={calles}
-            getOptionLabel={(option) => option.CalleNombre}
-            value={calle}
-            componentsProps={customPaperProps}
-            onChange={handleCalleChange}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Calle Principal"
-                variant="outlined"
-                fullWidth
-                sx={textFieldStyles}
-              />
-            )}
-          />
-        </Grid>
-
-        <Grid item xs={4} sm={2}>
-          <TextField
-            label="Nro. de Puerta"
-            variant="outlined"
-            value={numeroPuerta}
-            onChange={handleNumeroPuertaChange}
-            fullWidth
-            sx={textFieldStyles}
-            disabled={isKmEnabled}
-          />
-        </Grid>
-
-        <Grid item xs={4} sm={2}>
-          <TextField
-            label="Apto."
-            variant="outlined"
-            fullWidth
-            sx={textFieldStyles}
-            disabled={isKmEnabled}
-          />
-        </Grid>
-
-        <Grid item xs={4} sm={2}>
-          <TextField
-            label="Km"
-            variant="outlined"
-            fullWidth
-            sx={textFieldStyles}
-            disabled={!isKmEnabled}
-          />
-        </Grid>
-
-        {/* Segunda fila */}
-        <Grid item xs={12} sm={6}>
-          <Autocomplete
-            options={calles}
-            getOptionLabel={(option) => option.CalleNombre}
-            value={calleEsquina}
-            componentsProps={customPaperProps}
-            //onChange={handleCalleEsquinaChange}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Esquina 1"
-                variant="outlined"
-                fullWidth
-                sx={textFieldStyles}
-              />
-            )}
-          />
-        </Grid>
-
-        <Grid item xs={12} sm={6}>
-          <Autocomplete
-            options={calles}
-            getOptionLabel={(option) => option.CalleNombre}
-            value={calleEsquina}
-            componentsProps={customPaperProps}
-            onChange={handleCalleEsquinaChange}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Esquina 2"
-                variant="outlined"
-                fullWidth
-                sx={textFieldStyles}
-              />
-            )}
-          />
-        </Grid>
-
-        {/* Contenedor de campos pequeños y Observación */}
-        <Grid container item spacing={3} alignItems="flex-start">
-          {/* Campos pequeños */}
-          <Grid item xs={12} sm={6}>
-            <Grid container spacing={3}>
-              <Grid item xs={6}>
-                <TextField
-                  label="Manzana"
-                  variant="outlined"
-                  fullWidth
-                  sx={textFieldStyles}
-                />
-              </Grid>
-              <Grid item xs={6}>
-                <TextField
-                  label="Block/Solar"
-                  variant="outlined"
-                  fullWidth
-                  sx={textFieldStyles}
-                />
-              </Grid>
-            </Grid>
-          </Grid>
-
-          {/* Observación */}
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Observación"
-              variant="outlined"
-              multiline
-              rows={4}
-              fullWidth
-              sx={{
-                ...textFieldStyles,
-                //marginTop: '8px', // Espacio extra si es necesario
-              }}
-            />
-          </Grid>
+        <Grid item xs={6}>
+          <TextField label="Block/Solar" variant="outlined" fullWidth sx={textFieldStyles} />
         </Grid>
       </Grid>
+    </Grid>
+
+    {/* Observación */}
+    <Grid item xs={12} sm={6}>
+      <TextField
+        label="Observación"
+        variant="outlined"
+        multiline
+        rows={4}
+        fullWidth
+        sx={{
+          ...textFieldStyles,
+          //marginTop: '8px', // Espacio extra si es necesario
+        }}
+      />
+    </Grid>
+  </Grid>
+</Grid>
+
+
     </>
   );
 };
