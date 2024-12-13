@@ -61,7 +61,7 @@ const MapCompleto = ({ params, children, onParamsUpdate }) => {
   const handleMapClick = async (event) => {
     try {
       setIsLoading(true); // Mostrar el loading al inicio
-      
+
       if (popupButtonRef.current) {
         openPopup(); // Abre el popup
       } else {
@@ -442,7 +442,7 @@ const MapCompleto = ({ params, children, onParamsUpdate }) => {
     }
   };
 
-const openPopup = () => setIsPopupOpen(true);
+  const openPopup = () => setIsPopupOpen(true);
   const closePopup = () => {
     setIsPopupOpen(false);
     setInputValue(""); // Limpiar el cuadro de texto al cerrar
@@ -454,14 +454,13 @@ const openPopup = () => setIsPopupOpen(true);
     setInputValue(""); // Limpiar después de confirmar
   };
 
-
   return (
     <div
       id="map-container"
       style={{
         position: "relative",
         width: "100%",
-        height: "360px", 
+        height: "360px",
       }}
     >
       <div id="map" style={{ width: "100%", height: "100%" }} />
@@ -515,7 +514,6 @@ const openPopup = () => setIsPopupOpen(true);
               style={{ width: "20px", height: "20px" }}
             />
           </div>
-
           {/* Botón de abrir popup */}
           <div
             onClick={() => setIsPopupButtonActive((prev) => !prev)} // Cambia el estado
@@ -534,8 +532,8 @@ const openPopup = () => setIsPopupOpen(true);
             }}
           >
             <span style={{ fontSize: "18px" }}>✍️</span>
-          </div>;
-
+          </div>
+          ;
         </div>
       )}
 

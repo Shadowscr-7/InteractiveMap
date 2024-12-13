@@ -1,7 +1,6 @@
 {
-    "pm2": {
-      "interpreter": "none",
-      "windowsHide": true
-    }
+  "pm2": {
+    "interpreter": "none",
+    "windowsHide": true
   }
-  
+}

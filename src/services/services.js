@@ -323,7 +323,7 @@ export const getPtoInteres = async (departamento, ciudad, calle) => {
       },
       {
         withCredentials: true,
-      }
+      },
     );
     // Se asume que la API devuelve un objeto con 'lat' y 'long'
     const { lat, lon } = response.data;
@@ -331,7 +331,7 @@ export const getPtoInteres = async (departamento, ciudad, calle) => {
   } catch (error) {
     console.error(
       `Error al obtener coordenadas para DepartamentoId ${departamento}, CiudadId ${ciudad}, PtoInteres ${ptoInteres}:`,
-      error
+      error,
     );
     throw error;
   }

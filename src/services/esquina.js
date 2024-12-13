@@ -1,4 +1,4 @@
-import fetch from 'node-fetch';
+import fetch from "node-fetch";
 
 // Función para esperar un tiempo específico (en milisegundos)
 function wait(ms) {

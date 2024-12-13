@@ -52,7 +52,14 @@ const AddCliente = () => {
         }}
       >
         <MapCompleto params={params} onParamsUpdate={handleParamsChange}>
-          <StreetRenderer map={undefined} params={undefined} isMapReady={undefined} setIsLoading={undefined} setLastCoordinates={undefined} onParamsUpdate={undefined} />
+          <StreetRenderer
+            map={undefined}
+            params={undefined}
+            isMapReady={undefined}
+            setIsLoading={undefined}
+            setLastCoordinates={undefined}
+            onParamsUpdate={undefined}
+          />
         </MapCompleto>
 
         {/* Botón de Expansión */}

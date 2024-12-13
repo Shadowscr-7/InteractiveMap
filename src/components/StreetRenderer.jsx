@@ -10,18 +10,16 @@ import { useEffect, useRef } from "react";
 import { getPtoInteres } from "../services/services";
 
 const StreetRenderer = ({
-  map, 
-  params, 
-  isMapReady, 
+  map,
+  params,
+  isMapReady,
   setIsLoading, // Agrega esta línea
-  setLastCoordinates, 
-  onParamsUpdate 
+  setLastCoordinates,
+  onParamsUpdate,
 }) => {
   const { departamento, calle, pais, numero, esquina, ciudad } = params;
   const streetSource = useRef(new VectorSource()); // Persistencia de la fuente para los datos de la calle
   const markerSource = useRef(new VectorSource()); // Fuente para los marcadores
-
-
 
   useEffect(() => {
     if (!map || !isMapReady) {
@@ -116,7 +114,10 @@ const StreetRenderer = ({
 
     // Función para obtener y marcar un punto en el mapa
     const fetchMarkerData = async () => {
-      if (!calle.toLowerCase().includes("pto. int.".toLowerCase()) && (!calle || (!numero && !esquina))) {
+      if (
+        !calle.toLowerCase().includes("pto. int.".toLowerCase()) &&
+        (!calle || (!numero && !esquina))
+      ) {
         console.debug(
           "Skipping marker rendering: Calle, Numero or Esquina not provided.",
         );
@@ -128,23 +129,31 @@ const StreetRenderer = ({
       try {
         let lon, lat;
 
-        /* Caso Punto de interés */ 
+        /* Caso Punto de interés */
         if (calle.toLowerCase().includes("pto. int.".toLowerCase())) {
-          console.log("Calle contiene Pto. Int. (ignorando mayúsculas/minúsculas)");
+          console.log(
+            "Calle contiene Pto. Int. (ignorando mayúsculas/minúsculas)",
+          );
 
           // Función asíncrona para obtener coordenadas
           const obtenerCoordenadas = async () => {
             try {
-              const { lat, lon } = await getPtoInteres(departamento, ciudad, calle);
-              console.log(`Coordenadas del punto de interés: Latitud: ${lat}, Longitud: ${lon}`);
+              const { lat, lon } = await getPtoInteres(
+                departamento,
+                ciudad,
+                calle,
+              );
+              console.log(
+                `Coordenadas del punto de interés: Latitud: ${lat}, Longitud: ${lon}`,
+              );
 
               if (lon !== undefined && lat !== undefined) {
                 // Crear y agregar marcador
-                console.log('Dentro de latitud y longitud');
+                console.log("Dentro de latitud y longitud");
                 const marker = new Feature({
                   geometry: new Point(fromLonLat([lon, lat])),
                 });
-      
+
                 marker.setStyle(
                   new Style({
                     image: new Icon({
@@ -161,32 +170,29 @@ const StreetRenderer = ({
                     }),
                   }),
                 );
-      
+
                 markerSource.current.addFeature(marker);
                 map.getView().setCenter(fromLonLat([lon, lat]));
                 map.getView().setZoom(17);
-      
+
                 console.log("Marker rendered at:", { lon, lat });
-      
+
                 if (onParamsUpdate && esquina) {
                   onParamsUpdate({ esquina });
                   console.log("Updated esquina parameter:", esquina);
                 }
               }
-
             } catch (error) {
-              console.error("Error al obtener coordenadas del punto de interés:", error);
+              console.error(
+                "Error al obtener coordenadas del punto de interés:",
+                error,
+              );
             }
           };
 
           // Invocación de la función
           obtenerCoordenadas();
-
-          
-
-        }
-        else
-        {
+        } else {
           if (numero && !esquina) {
             // Caso: Calle + Número (sin Esquina)
             console.log("Caso: Calle + Número (sin Esquina)");
@@ -262,11 +268,10 @@ const StreetRenderer = ({
             }
           }
         }
-        
 
         if (lon !== undefined && lat !== undefined) {
           // Crear y agregar marcador
-          console.log('Dentro de latitud y longitud');
+          console.log("Dentro de latitud y longitud");
           const marker = new Feature({
             geometry: new Point(fromLonLat([lon, lat])),
           });
@@ -304,7 +309,11 @@ const StreetRenderer = ({
       }
     };
 
-    if (numero || esquina || calle.toLowerCase().includes("pto. int.".toLowerCase())) {
+    if (
+      numero ||
+      esquina ||
+      calle.toLowerCase().includes("pto. int.".toLowerCase())
+    ) {
       fetchMarkerData();
     } else {
       fetchStreetData();
@@ -331,7 +340,6 @@ const StreetRenderer = ({
       map.removeLayer(streetLayer);
       map.removeLayer(markerLayer);
     };
-    
   }, [map]);
 
   return null;
