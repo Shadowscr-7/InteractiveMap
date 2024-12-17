@@ -35,7 +35,22 @@ const MapCompleto = ({ params, children, onParamsUpdate }) => {
     }),
   );
   // Accede a los parámetros desde params
-  const { pais, departamento, ciudad, calle, numero, esquina } = params;
+  console.log('PARAMETROS DE MAP', params);
+  // Desestructurar los valores del objeto params
+  const { pais, departamentoObj, ciudadObj, calleObj, numero, esquinaObj } = params;
+
+  // Verificar si departamento no es null y obtener el nombre
+  const departamento = departamentoObj?.DepartamentoNombre || "";
+
+  // Verificar si ciudad no es null y obtener el nombre
+  const ciudad = ciudadObj?.CiudadNombre || "";
+
+  // Verificar si calle no es null
+  const calle = calleObj?.calleNombre || "";
+
+  // Verificar si esquina no es null
+  const esquina = esquinaObj?.calleNombre || "";
+  
   const [showPOIControls, setShowPOIControls] = useState(false); // Estado para controlar la visibilidad de los botones
 
   // Log para verificar los parámetros

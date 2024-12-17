@@ -312,7 +312,7 @@ const StreetRenderer = ({
     if (
       numero ||
       esquina ||
-      calle.toLowerCase().includes("pto. int.".toLowerCase())
+      calle?.toLowerCase().includes("pto. int.".toLowerCase())
     ) {
       fetchMarkerData();
     } else {

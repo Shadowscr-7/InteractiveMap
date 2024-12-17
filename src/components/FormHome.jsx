@@ -26,43 +26,50 @@ const FormHome = ({ onParamsChange, params }) => {
   const [loadingCiudades, setLoadingCiudades] = useState(false);
   const [loadingCalles, setLoadingCalles] = useState(false);
 
-  // Sincroniza los estados del formulario con los nuevos parámetros
   useEffect(() => {
     if (params) {
       console.log("Params recibidos:", params);
-
+  
+      // Verifica si el departamento es un objeto y accede al nombre
+      const departamentoNombre = params.departamento?.DepartamentoNombre;
       const departamentoEncontrado = departamentos.find(
-        (dep) => dep.DepartamentoNombre === params.departamento,
+        (dep) => dep.DepartamentoNombre === departamentoNombre
       );
-      console.log("Departamento encontrado:", departamentoEncontrado);
-
+      console.log("Departamento encontrado:", departamentoNombre);
+  
+      // Verifica si ciudad no es null
+      const ciudadNombre = params.ciudad ? params.ciudad.CiudadNombre : null;
       const ciudadEncontrada = ciudades.find(
-        (ciu) => ciu.CiudadNombre === params.ciudad,
+        (ciu) => ciu.CiudadNombre === ciudadNombre
       );
       console.log("Ciudad encontrada:", ciudadEncontrada);
-
+  
+      // Verifica si calle no es null
+      const calleNombre = params.calle || null;
       const calleEncontrada = calles.find(
-        (cal) => cal.CalleNombre === params.calle,
+        (cal) => cal.CalleNombre === calleNombre
       );
       console.log("Calle encontrada:", calleEncontrada);
-
-      // Buscar y establecer la calle esquina
+  
+      // Verifica si esquina no es null
+      const esquinaNombre = params.esquina || null;
       const esquinaEncontrada = calles.find(
-        (cal) => cal.CalleNombre === params.esquina,
+        (cal) => cal.CalleNombre === esquinaNombre
       );
       console.log("Calle esquina encontrada:", esquinaEncontrada);
-
+  
       setDepartamento(departamentoEncontrado || null);
       setCiudad(ciudadEncontrada || null);
       setCalle(calleEncontrada || null);
       setCalleEsquina(esquinaEncontrada || null);
-
+  
       // Manejo de múltiples números de puerta
-      const numerosPuerta = params.numero ? params.numero.split(",") : [""]; // Divide los números o asigna un array con cadena vacía
-      setNumeroPuerta(numerosPuerta[0] || ""); // Toma el primer número o asigna una cadena vacía
+      const numerosPuerta = params.numero ? params.numero.split(",") : [""];
+      setNumeroPuerta(numerosPuerta[0] || "");
       console.log("Número de puerta procesado:", numerosPuerta[0]);
     }
   }, [params, departamentos, ciudades, calles]);
+  
 
   // Obtener departamentos al cargar
   useEffect(() => {
