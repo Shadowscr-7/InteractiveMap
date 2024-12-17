@@ -11,7 +11,7 @@ import { fromLonLat, toLonLat } from "ol/proj";
 import Feature from "ol/Feature";
 import Point from "ol/geom/Point";
 import { Icon, Style } from "ol/style";
-import { fetchPOIs } from "../services/services";
+import { fetchPOIs, createPOI } from "../services/services";
 import { defaults as defaultControls } from "ol/control";
 
 const MapCompleto = ({ params, children, onParamsUpdate }) => {
@@ -332,6 +332,18 @@ const MapCompleto = ({ params, children, onParamsUpdate }) => {
   };
 
   useEffect(() => {
+      const getCookie = (name) => {
+        const matches = document.cookie.match(
+          new RegExp("(?:^|; )" + name + "=([^;]*)")
+        );
+        return matches ? decodeURIComponent(matches[1]) : null;
+      };
+    
+      const usuario = getCookie("Usuario");
+      console.log("Valor de la cookie Usuario:", usuario);
+    }, []);
+
+  useEffect(() => {
     setIsLoading(true); // Mostrar el loading al inicio
     const fetchCoordinates = async () => {
       if (departamento || ciudad) {
@@ -448,8 +460,30 @@ const MapCompleto = ({ params, children, onParamsUpdate }) => {
     setInputValue(""); // Limpiar el cuadro de texto al cerrar
   };
 
-  const confirmAction = () => {
+  const confirmAction = async () => {
     console.log("Texto ingresado:", inputValue);
+  
+    // Datos para crear el POI (ajústalos según tu lógica de datos)
+    const poiData = {
+      Departamento: departamento, // Puedes cambiarlo dinámicamente
+      Ciudadd: ciudad,
+      PuntosReferenciaCalle: calle, // Ejemplo
+      PuntosReferenciaNumero: numero,
+      PuntosReferenciaLatitud: lat,
+      PuntosReferenciaLongitud: lon,
+      PuntosReferenciaNombre: inputValue, // Nombre ingresado en el input
+      PuntosReferenciaUsuIns: usuario, // Ajusta según corresponda
+    };
+  
+    try {
+      const response = await createPOI(poiData);
+      console.log("Respuesta del servidor:", response);
+      alert("Punto de interés creado exitosamente.");
+    } catch (error) {
+      console.error("Error al confirmar acción:", error);
+      alert("Error al crear el punto de interés. Intenta nuevamente.");
+    }
+  
     setIsPopupOpen(false);
     setInputValue(""); // Limpiar después de confirmar
   };

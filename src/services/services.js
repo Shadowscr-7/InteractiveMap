@@ -336,3 +336,29 @@ export const getPtoInteres = async (departamento, ciudad, calle) => {
     throw error;
   }
 };
+
+/**
+ * Servicio para crear un Punto de Interés (POI).
+ * Endpoint: /ImportarOSM/createPOI
+ * @param {Object} poiData - Datos del Punto de Interés.
+ * @returns {Promise<Object>} Respuesta del servidor.
+ */
+export const createPOI = async (poiData) => {
+  try {
+    const response = await http.post(
+      "https://www.riogas.uy/puestos2/rest/ImportarOSM/createPOI",
+      poiData,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: "GX_CLIENT_ID=cbf08e02-eb36-4c6b-b019-eda6ae23d7eb",
+        },
+      },
+    );
+    console.log("POI creado correctamente:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error al crear el POI:", error.message);
+    throw error;
+  }
+};
