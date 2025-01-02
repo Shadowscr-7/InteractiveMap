@@ -362,3 +362,26 @@ export const createPOI = async (poiData) => {
     throw error;
   }
 };
+
+/**
+ * Servicio para obtener la colección de móviles y sus coordenadas.
+ * Endpoint: /ListaCoordenadas (usando el proxy de api2)
+ * @returns {Promise<Array>} Lista de móviles con coordenadas
+ */
+export const getMoviles = async () => {
+  try {
+    const response = await http.get("/api2/ListaCoordenadas", {
+      withCredentials: true,
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: "GX_CLIENT_ID=f6822eb4-3f36-4384-a124-5f1046709e68", // Ajusta el valor si cambia
+      },
+    });
+
+    console.log("Datos obtenidos de /api2/ListaCoordenadas:", response.data);
+    return response.data || [];
+  } catch (error) {
+    console.error("Error al obtener móviles:", error.message);
+    throw error;
+  }
+};

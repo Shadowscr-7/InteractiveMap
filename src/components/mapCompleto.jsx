@@ -37,31 +37,44 @@ const MapCompleto = ({ params, children, onParamsUpdate }) => {
   // Accede a los parámetros desde params
   console.log('PARAMETROS DE MAP', params);
   // Desestructurar los valores del objeto params
-  const { pais, departamentoObj, ciudadObj, calleObj, numero, esquinaObj } = params;
+  // Verificación previa de las propiedades
+// Verificación previa de las propiedades
+const {
+  pais,
+  departamento: departamentoObjRaw,
+  ciudad: ciudadObjRaw,
+  calle: calleObjRaw,
+  numero,
+  esquina: esquinaObjRaw
+} = params;
 
-  // Verificar si departamento no es null y obtener el nombre
-  const departamento = departamentoObj?.DepartamentoNombre || "";
+// Ajustar las propiedades dinámicamente y manejar valores faltantes
+const departamento = typeof departamentoObjRaw === "object" ? departamentoObjRaw?.nombre ?? "" : departamentoObjRaw ?? "";
+const ciudad = typeof ciudadObjRaw === "object" ? ciudadObjRaw?.CalleNombre ?? "" : ciudadObjRaw ?? "";
+const calle = typeof calleObjRaw === "object" ? calleObjRaw?.nombre ?? "" : calleObjRaw ?? "";
+const esquina = typeof esquinaObjRaw === "object" ? esquinaObjRaw?.nombre ?? "" : esquinaObjRaw ?? "";
 
-  // Verificar si ciudad no es null y obtener el nombre
-  const ciudad = ciudadObj?.CiudadNombre || "";
+// Resultado final
+console.log({
+  pais: pais ?? "",
+  departamento,
+  ciudad,
+  calle,
+  numero: numero ?? "", // Asegurar que numero no sea undefined
+  esquina
+});
 
-  // Verificar si calle no es null
-  const calle = calleObj?.calleNombre || "";
-
-  // Verificar si esquina no es null
-  const esquina = esquinaObj?.calleNombre || "";
-  
   const [showPOIControls, setShowPOIControls] = useState(false); // Estado para controlar la visibilidad de los botones
 
   // Log para verificar los parámetros
-  console.log("Parámetros iniciales:", {
+  /*console.log("Parámetros iniciales:", {
     pais,
     departamento,
     ciudad,
     calle,
     numero,
     esquina,
-  });
+  });*/
 
   // Configuración de íconos de POI
   const POI_TYPES = {
@@ -69,7 +82,7 @@ const MapCompleto = ({ params, children, onParamsUpdate }) => {
     E: { tooltip: "Educación", icon: "/icons/library.png" },
     P: { tooltip: "Edificio Público", icon: "/icons/public.png" },
     B: { tooltip: "Banco", icon: "/icons/bank.png" },
-    O: { tooltip: "Otros", icon: "/icons/circle.png" }, // Genérico
+    O: { tooltip: "RioGas", icon: "/icons/circle.png" }, // Genérico
     F: { tooltip: "Farmacia", icon: "/icons/pharmacy.png" },
   };
 

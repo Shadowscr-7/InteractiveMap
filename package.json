@@ -2,14 +2,14 @@
   "name": "mapa-osm",
   "version": "0.1.0",
   "private": true,
-  "scripts": {
-    "dev": "npm-run-all --parallel --print-label dev:next dev:ws",
-    "dev:next": "next dev",
-    "dev:ws": "node server.js",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
+"scripts": {
+  "dev": "npm-run-all --parallel --print-label dev:next dev:ws",
+  "dev:next": "set NODE_OPTIONS=--max-old-space-size=8192 && next dev",
+  "dev:ws": "node server.js",
+  "build": "next build",
+  "start": "next start",
+  "lint": "next lint"
+},
   "dependencies": {
     "@emotion/react": "^11.13.5",
     "@emotion/styled": "^11.13.5",
